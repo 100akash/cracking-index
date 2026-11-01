@@ -35,6 +35,12 @@ def _rows_from_text(text):
     sample = "\n".join(lines[:200])
     counts = {d: sample.count(d) for d in [",", "\t", ";"]}
     delim = max(counts, key=counts.get)
+    # semicolon files often use decimal commas, which inflate the comma count
+    lines_nonempty = [ln for ln in lines[:200] if ln.strip()]
+    if counts[";"] and sum(";" in ln for ln in lines_nonempty) >= 0.8 * len(lines_nonempty):
+        delim = ";"
+    elif counts["\t"] and sum("\t" in ln for ln in lines_nonempty) >= 0.8 * len(lines_nonempty):
+        delim = "\t"
     if counts[delim] == 0:
         return [ln.split() for ln in lines], "space"
     if delim == ";" and counts[","] > 0:
@@ -216,6 +222,40 @@ def guess_columns(header, units, arr):
                     c["scores"]["time"] = 3
                     break
 
+    # value-based guesses for columns the names do not explain
+    n = arr.shape[0]
+    def _fin(i):
+        c = arr[:, i]
+        return c[np.isfinite(c)]
+    named = lambda role: any(role in c["scores"] for c in cols)
+    free = [c for c in cols if not c["scores"]]
+    if not named("load"):
+        best = None
+        for c in free:
+            v = _fin(c["index"])
+            if len(v) < 20 or np.ptp(v) <= 0:
+                continue
+            k = int(np.argmax(v))
+            if 0.03 * len(v) < k < 0.97 * len(v) and v[-1] < v[k] - 0.4 * np.ptp(v):
+                score = np.ptp(v)
+                if best is None or score > best[0]:
+                    best = (score, c)
+        if best:
+            best[1]["scores"]["load"] = 2
+            best[1]["by_values"] = True
+    if not named("lld"):
+        for c in free:
+            if c["scores"]:
+                continue
+            v = _fin(c["index"])
+            if len(v) < 20 or np.ptp(v) <= 0:
+                continue
+            d = np.diff(v)
+            if np.mean(d >= -1e-12) > 0.9:
+                c["scores"]["lld"] = 2
+                c["by_values"] = True
+                break
+
     taken = set()
     def pick(role, k=1):
         best = sorted([c for c in cols if role in c["scores"] and c["index"] not in taken], key=lambda c: -c["scores"][role])
@@ -235,6 +275,9 @@ def guess_columns(header, units, arr):
         if c["unit"] is None and c["role"] != "ignore":
             c["unit"], c["unit_source"] = _unit_from_values(c["role"], arr[:, c["index"]])
     notes = []
+    guessed = [c for c in cols if c.get("by_values") and c["role"] != "ignore"]
+    if guessed:
+        notes.append("Guessed from the values, since the names do not say: " + ", ".join(f"{c['name']} as {c['role'].upper()}" for c in guessed) + ". Check these.")
     loads = [c for c in cols if "load" in c["scores"]]
     if len(loads) > 1:
         notes.append("More than one load column. Pick the load cell you used, or set the other one as Load 2 to average them.")

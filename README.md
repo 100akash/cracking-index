@@ -64,6 +64,9 @@ Bajaj, A. (2026). *Cracking Test Analyzer*. https://akashto.com/cracking-index/
 
 ## References
 
+The [References page](https://akashto.com/cracking-index/references.html) lists the standard and the foundation papers for each test.
+
+
 - AASHTO T 393-21. Determining the Fracture Potential of Asphalt Mixtures Using the Illinois Flexibility Index Test (I-FIT).
 - ASTM D8225-19. Determination of Cracking Tolerance Index of Asphalt Mixture Using the Indirect Tensile Cracking Test at Intermediate Temperature.
 - AASHTO T 394-21. Determining the Fracture Energy of Asphalt Mixtures Using the Semicircular Bend Geometry (SCB).

@@ -115,7 +115,8 @@
     S.step = n; S.seen = Math.max(S.seen || 1, n); render(); window.scrollTo(0, 0);
     if (n === 3) refreshPreview();
   }
-  const footer = () => `<p class="disclaimer">Check results against the standard before use. Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i>. akashto.com/cracking-index</p>`;
+  const footer = () => `<p class="disclaimer">Check results against the standard before use. Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i> (Version 0.1). akashto.com/cracking-index</p>
+    <p class="disclaimer">v0.1 · <a href="references.html">References and changes</a> · <a href="https://github.com/100akash/cracking-index/issues" target="_blank" rel="noopener">Report an issue</a></p>`;
 
   function render() {
     renderSteps();

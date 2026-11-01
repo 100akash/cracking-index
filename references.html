@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Standards and foundation papers behind each test in the Cracking Test Analyzer.">
+<title>References · Cracking Test Analyzer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313294B'/%3E%3Cpath d='M6 25 C10 8 14 8 17 14 S24 24 27 9' stroke='%23FF5F05' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Overpass:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="web/style.css?v=9">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="./" aria-label="Cracking Test Analyzer">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#FFFFFF" fill-opacity="0.12"/><path d="M6 25 C10 8 14 8 17 14 S24 24 27 9" stroke="#FF5F05" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
+    <span>Cracking Test Analyzer</span>
+  </a>
+  <nav class="toplinks"><a href="./">Open the tool</a><a href="references.html" aria-current="page">References</a></nav>
+</header>
+<main class="refs">
+  <section class="stack">
+    <h1>References</h1>
+    <p class="lead">The current standard and the papers that first developed each test. The last line of each block says how the tool computes it. The PDF report repeats the method notes for the test you ran.</p>
+    <nav class="row small" aria-label="Tests">
+      <a href="#ifit">I-FIT</a><a href="#idealct">IDEAL-CT</a><a href="#donut">DONUT</a><a href="#scb">SCB</a><a href="#sltscb">SLT-SCB</a><a href="#dct">DCT</a><a href="#idt">IDT strength</a><a href="#cite">Cite</a><a href="#changes">Changes</a>
+    </nav>
+  </section>
+
+  <h2 class="refgroup">Service temperature</h2>
+
+  <article class="card ref" id="ifit">
+    <div class="refhead"><h3>I-FIT</h3><span class="chip navy">LLD-control · 50 mm/min</span></div>
+    <dl>
+      <dt>Standard</dt><dd>AASHTO T 393-21. Determining the Fracture Potential of Asphalt Mixtures Using the Illinois Flexibility Index Test (I-FIT).</dd>
+      <dt>Foundation papers</dt>
+      <dd><ul>
+        <li>Ozer, H., Al-Qadi, I.L., Lambros, J., El-Khatib, A., Singhvi, P., and Doll, B. (2016). Development of the fracture-based flexibility index for asphalt concrete cracking potential using modified semi-circle bending test parameters. <i>Construction and Building Materials</i>, 115, 390–401. <a href="https://doi.org/10.1016/j.conbuildmat.2016.03.144" target="_blank" rel="noopener">doi:10.1016/j.conbuildmat.2016.03.144</a></li>
+        <li>Ozer, H., Al-Qadi, I.L., Singhvi, P., Khan, T., Rivera-Perez, J., and El-Khatib, A. (2016). Fracture characterization of asphalt mixtures with high recycled content using Illinois semicircular bending test method and flexibility index. <i>Transportation Research Record</i>, 2575, 130–137. <a href="https://doi.org/10.3141/2575-14" target="_blank" rel="noopener">doi:10.3141/2575-14</a></li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>6th-order polynomial before the peak and a 4-term Gaussian after it (T 393 Appendix X1). G<sub>f</sub> = W<sub>f</sub>/((r − a)t). FI = G<sub>f</sub>/|m| × 0.01.</dd>
+    </dl>
+  </article>
+
+  <article class="card ref" id="idealct">
+    <div class="refhead"><h3>IDEAL-CT</h3><span class="chip navy">LLD-control · 50 mm/min</span></div>
+    <dl>
+      <dt>Standard</dt><dd>ASTM D8225-19. Determination of Cracking Tolerance Index of Asphalt Mixture Using the Indirect Tensile Cracking Test at Intermediate Temperature.</dd>
+      <dt>Foundation paper</dt>
+      <dd><ul>
+        <li>Zhou, F., Im, S., Sun, L., and Scullion, T. (2017). Development of an IDEAL cracking test for asphalt mix design and QC/QA. <i>Road Materials and Pavement Design</i>, 18(sup4), 405–427. <a href="https://doi.org/10.1080/14680629.2017.1389082" target="_blank" rel="noopener">doi:10.1080/14680629.2017.1389082</a></li>
+      </ul></dd>
+      <dt>N<sub>flex</sub></dt>
+      <dd><ul>
+        <li>West, R., Van Winkle, C., Maghsoodloo, S., and Dixon, S. (2017). Relationships between simple asphalt mixture cracking tests using N<sub>design</sub> specimens and fatigue cracking at FHWA's accelerated loading facility. <i>Journal of the Association of Asphalt Paving Technologists</i>.</li>
+        <li>Yin, F., Garita, J., Taylor, A., and West, R. (2018). Refining the indirect tensile (IDT) N<sub>flex</sub> Factor test to evaluate cracking resistance of asphalt mixtures for mix design and quality assurance. <i>Construction and Building Materials</i>, 172, 396–405. <a href="https://doi.org/10.1016/j.conbuildmat.2018.03.251" target="_blank" rel="noopener">doi:10.1016/j.conbuildmat.2018.03.251</a></li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>W<sub>f</sub> from the recorded data to 100 N. |m<sub>75</sub>| is a line through all points between P<sub>85</sub> and P<sub>65</sub>. N<sub>flex</sub> follows Yin et al. (2018), with μ fixed at 0.35 or estimated from the secant stiffness.</dd>
+    </dl>
+  </article>
+
+  <article class="card ref" id="donut">
+    <div class="refhead"><h3>DONUT</h3><span class="chip navy">LLD-control · 50 mm/min</span></div>
+    <dl>
+      <dt>Standard</dt><dd><i>Draft</i> ASTM. Disc with O-Notch for Uniaxial Testing (DONUT). The draft may change before it is published.</dd>
+      <dt>Foundation papers</dt>
+      <dd><ul>
+        <li>Bajaj, A., Al-Qadi, I.L., and Lambros, J. (2026). A novel fracture-inspired cored Brazil disc test to characterize cracking potential for asphalt concrete. <i>International Journal of Pavement Engineering</i>, 27(1), 2670562. <a href="https://doi.org/10.1080/10298436.2026.2670562" target="_blank" rel="noopener">doi:10.1080/10298436.2026.2670562</a></li>
+        <li>Bajaj, A., Al-Qadi, I.L., and Lambros, J. (2026). Fracture characteristics of cored Brazil disk geometry. <i>12th International Conference on the Bearing Capacity of Roads, Railways and Airfields</i>. <a href="https://doi.org/10.5281/zenodo.20662584" target="_blank" rel="noopener">doi:10.5281/zenodo.20662584</a></li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>W<sub>f</sub> from the recorded data, contact load to termination. G<sub>f</sub> = W<sub>f</sub>/((D − d)t). Cubic near the peak and a scaled 4-term Gaussian after it (draft Appendix A). DI = G<sub>f</sub>/|S<sub>75</sub>| × 0.001.</dd>
+    </dl>
+  </article>
+
+  <h2 class="refgroup">Low temperature</h2>
+
+  <article class="card ref" id="scb">
+    <div class="refhead"><h3>SCB</h3><span class="chip navy">CMOD-control · 0.0005 mm/s</span></div>
+    <dl>
+      <dt>Standard</dt><dd>AASHTO T 394-21. Determining the Fracture Energy of Asphalt Mixtures Using the Semicircular Bend Geometry (SCB).</dd>
+      <dt>Foundation papers</dt>
+      <dd><ul>
+        <li>Chong, K.P., and Kuruppu, M.D. (1984). New specimen for fracture toughness determination for rock and other materials. <i>International Journal of Fracture</i>, 26, R59–R62. <a href="https://doi.org/10.1007/BF01157555" target="_blank" rel="noopener">doi:10.1007/BF01157555</a></li>
+        <li>Li, X., and Marasteanu, M.O. (2004). Evaluation of the low temperature fracture resistance of asphalt mixtures using the semi circular bend test. <i>Journal of the Association of Asphalt Paving Technologists</i>, 73, 401–426.</li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>Load vs. average LLD. Tail P = c/u² fitted below 60% of peak. G<sub>f</sub> = (W + W<sub>tail</sub>)/((r − a)t). K<sub>IC</sub> from T 394 Eq. 6 and 7. Stiffness uses the SLT-SCB window method.</dd>
+    </dl>
+  </article>
+
+  <article class="card ref" id="sltscb">
+    <div class="refhead"><h3>SLT-SCB</h3><span class="chip navy">LLD-control · 0.15 mm/min</span></div>
+    <dl>
+      <dt>Standard</dt><dd><i>Draft</i> ASTM. Simplified low-temperature semicircular bend test. The draft may change before it is published.</dd>
+      <dt>Foundation papers</dt>
+      <dd><ul>
+        <li>Modi, S.H., Bajaj, A., Dave, E.V., Sias, J.E., Al-Qadi, I.L., Lambros, J., and Tormos, S. (2026). Development of a simplified low-temperature SCB test protocol to characterise cracking potential of airfield mixtures. <i>International Journal of Pavement Engineering</i>, 27(1). <a href="https://doi.org/10.1080/10298436.2026.2698794" target="_blank" rel="noopener">doi:10.1080/10298436.2026.2698794</a></li>
+        <li>Bajaj, A., Modi, S.H., Al-Qadi, I.L., Dave, E.V., Lambros, J., and Sias, J.E. (in press). Lab and field validation of simplified low-temperature SCB test for airfield asphalt mixtures. <i>Journal of Transportation Engineering, Part B: Pavements</i>.</li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>G<sub>f-pre</sub> = pre-peak work/((r − a)t). Stiffness S from a window of 15% of the pre-peak points with the best penalized R². LCI = G<sub>f-pre</sub>/S.</dd>
+    </dl>
+  </article>
+
+  <article class="card ref" id="dct">
+    <div class="refhead"><h3>DCT</h3><span class="chip navy">CMOD-control · 0.017 mm/s</span></div>
+    <dl>
+      <dt>Standard</dt><dd>ASTM D7313-20. Determining Fracture Energy of Asphalt Mixtures Using the Disk-Shaped Compact Tension Geometry.</dd>
+      <dt>Foundation papers</dt>
+      <dd><ul>
+        <li>Wagoner, M.P., Buttlar, W.G., and Paulino, G.H. (2005). Disk-shaped compact tension test for asphalt concrete fracture. <i>Experimental Mechanics</i>, 45(3), 270–277. <a href="https://doi.org/10.1177/0014485105053205" target="_blank" rel="noopener">doi:10.1177/0014485105053205</a></li>
+        <li>Wagoner, M.P., Buttlar, W.G., Paulino, G.H., and Blankenship, P. (2005). Investigation of the fracture resistance of hot-mix asphalt concrete using a disk-shaped compact tension test. <i>Transportation Research Record</i>, 1929, 183–192. <a href="https://doi.org/10.3141/1929-22" target="_blank" rel="noopener">doi:10.3141/1929-22</a></li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>CMOD vs. time fitted with a line (D7313 8.1). Area under load vs. fitted CMOD to 100 N. G<sub>f</sub> = area/(B(W − a)).</dd>
+    </dl>
+  </article>
+
+  <article class="card ref" id="idt">
+    <div class="refhead"><h3>IDT strength</h3><span class="chip navy">LLD-control · 12.5 mm/min</span></div>
+    <dl>
+      <dt>Standard</dt><dd>AASHTO T 322-07. Determining the Creep Compliance and Strength of Hot Mix Asphalt (HMA) Using the Indirect Tensile Test Device. Strength part only.</dd>
+      <dt>Foundation paper</dt>
+      <dd><ul>
+        <li>Roque, R., and Buttlar, W.G. (1992). The development of a measurement and analysis system to accurately determine asphalt concrete properties using the indirect tensile mode. <i>Journal of the Association of Asphalt Paving Technologists</i>, 61, 304–332.</li>
+      </ul></dd>
+      <dt>In this tool</dt><dd>S<sub>t</sub> = 2P<sub>f</sub>/(π b D). Creep compliance is not computed.</dd>
+    </dl>
+  </article>
+
+  <article class="card ref" id="cite">
+    <h3>Cite this tool</h3>
+    <p>Bajaj, A. (2026). <i>Cracking Test Analyzer</i> (Version 0.1). <a href="https://akashto.com/cracking-index/">https://akashto.com/cracking-index/</a></p>
+    <p class="small muted">Check results against the standard before use. This is an independent tool. It is not endorsed by AASHTO, ASTM or any agency.</p>
+  </article>
+
+  <article class="card ref" id="changes">
+    <h3>Changes</h3>
+    <dl>
+      <dt>v0.1 · November 2026</dt><dd>First release. Seven tests, column detection for CSV, TXT and XLSX files, loading checks, fits, outlier option, and Excel and PDF export.</dd>
+    </dl>
+    <p class="small">Found a problem? <a href="https://github.com/100akash/cracking-index/issues" target="_blank" rel="noopener">Report an issue on GitHub</a>. Issues are public, so do not attach test files you cannot share.</p>
+  </article>
+</main>
+</body>
+</html>

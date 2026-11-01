@@ -46,7 +46,9 @@ TESTS = {
             {"key": "rate", "label": "LLD rate", "unit": "mm/min", "dp": 1},
         ],
         "table": ["Pmax", "u0", "Gf", "m_abs", "FI"],
-        "refs": ["AASHTO T 393-21. Determining the Fracture Potential of Asphalt Mixtures Using the Illinois Flexibility Index Test (I-FIT)."],
+        "refs": ["AASHTO T 393-21. Determining the Fracture Potential of Asphalt Mixtures Using the Illinois Flexibility Index Test (I-FIT).",
+                 "Ozer, H., Al-Qadi, I.L., Lambros, J., El-Khatib, A., Singhvi, P., and Doll, B. (2016). Development of the fracture-based flexibility index for asphalt concrete cracking potential using modified semi-circle bending test parameters. Construction and Building Materials, 115, 390-401. https://doi.org/10.1016/j.conbuildmat.2016.03.144",
+                 "Ozer, H., Al-Qadi, I.L., Singhvi, P., Khan, T., Rivera-Perez, J., and El-Khatib, A. (2016). Fracture characterization of asphalt mixtures with high recycled content using Illinois semicircular bending test method and flexibility index. Transportation Research Record, 2575, 130-137. https://doi.org/10.3141/2575-14"],
     },
     "idealct": {
         "name": "IDEAL-CT",
@@ -89,7 +91,8 @@ TESTS = {
         ],
         "table": ["Pmax", "Gf", "l75", "m75_abs", "CT", "Nflex"],
         "refs": ["ASTM D8225-19. Determination of Cracking Tolerance Index of Asphalt Mixture Using the Indirect Tensile Cracking Test at Intermediate Temperature.",
-                 "Yin, F., Garita, J., Taylor, A., West, R. (2018). Refining the indirect tensile (IDT) Nflex Factor test to evaluate cracking resistance of asphalt mixtures for mix design and quality assurance. Construction and Building Materials, 172, 396-405. https://doi.org/10.1016/j.conbuildmat.2018.03.251"],
+                 "Yin, F., Garita, J., Taylor, A., West, R. (2018). Refining the indirect tensile (IDT) Nflex Factor test to evaluate cracking resistance of asphalt mixtures for mix design and quality assurance. Construction and Building Materials, 172, 396-405. https://doi.org/10.1016/j.conbuildmat.2018.03.251",
+                 "Zhou, F., Im, S., Sun, L., and Scullion, T. (2017). Development of an IDEAL cracking test for asphalt mix design and QC/QA. Road Materials and Pavement Design, 18(sup4), 405-427. https://doi.org/10.1080/14680629.2017.1389082"],
     },
     "donut": {
         "name": "DONUT",
@@ -129,7 +132,8 @@ TESTS = {
             {"key": "rate", "label": "LLD rate", "unit": "mm/min", "dp": 1},
         ],
         "table": ["P100", "l100", "l75", "Gf", "S75_abs", "DI"],
-        "refs": ["Draft ASTM. Standard Test Method for Determining the Cracking Potential of Asphalt Mixtures Using the Disc with O-Notch for Uniaxial Testing (DONUT). Work item draft."],
+        "refs": ["Draft ASTM. Standard Test Method for Determining the Cracking Potential of Asphalt Mixtures Using the Disc with O-Notch for Uniaxial Testing (DONUT). Work item draft.",
+                 "Bajaj, A., Al-Qadi, I.L., and Lambros, J. (2026). A novel fracture-inspired cored Brazil disc test to characterize cracking potential for asphalt concrete. International Journal of Pavement Engineering, 27(1), 2670562. https://doi.org/10.1080/10298436.2026.2670562"],
     },
     "scb": {
         "name": "SCB",
@@ -168,7 +172,8 @@ TESTS = {
             {"key": "rate", "label": "CMOD rate", "unit": "mm/s", "dp": 5},
         ],
         "table": ["Pmax", "Gf", "KIC", "S"],
-        "refs": ["AASHTO T 394-21. Determining the Fracture Energy of Asphalt Mixtures Using the Semicircular Bend Geometry (SCB)."],
+        "refs": ["AASHTO T 394-21. Determining the Fracture Energy of Asphalt Mixtures Using the Semicircular Bend Geometry (SCB).",
+                 "Li, X., and Marasteanu, M.O. (2004). Evaluation of the low temperature fracture resistance of asphalt mixtures using the semi circular bend test. Journal of the Association of Asphalt Paving Technologists, 73, 401-426."],
     },
     "sltscb": {
         "name": "SLT-SCB",
@@ -209,7 +214,9 @@ TESTS = {
             {"key": "rate", "label": "LLD rate", "unit": "mm/min", "dp": 3},
         ],
         "table": ["Pmax", "Gf_pre", "S", "LCI"],
-        "refs": ["Draft ASTM. Simplified low-temperature semicircular bend (SLT-SCB) test. Technical note draft."],
+        "refs": ["Draft ASTM. Simplified low-temperature semicircular bend (SLT-SCB) test. Technical note draft.",
+                 "Modi, S.H., Bajaj, A., Dave, E.V., Sias, J.E., Al-Qadi, I.L., Lambros, J., and Tormos, S. (2026). Development of a simplified low-temperature SCB test protocol to characterise cracking potential of airfield mixtures. International Journal of Pavement Engineering, 27(1). https://doi.org/10.1080/10298436.2026.2698794",
+                 "Bajaj, A., Modi, S.H., Al-Qadi, I.L., Dave, E.V., Lambros, J., and Sias, J.E. (in press). Lab and field validation of simplified low-temperature SCB test for airfield asphalt mixtures. Journal of Transportation Engineering, Part B: Pavements."],
     },
     "dct": {
         "name": "DCT",
@@ -243,7 +250,8 @@ TESTS = {
             {"key": "cmod_r2", "label": "CMOD vs. time R²", "unit": "", "dp": 5},
         ],
         "table": ["Pmax", "t_peak", "rate", "Gf"],
-        "refs": ["ASTM D7313-20. Determining Fracture Energy of Asphalt Mixtures Using the Disk-Shaped Compact Tension Geometry."],
+        "refs": ["ASTM D7313-20. Determining Fracture Energy of Asphalt Mixtures Using the Disk-Shaped Compact Tension Geometry.",
+                 "Wagoner, M.P., Buttlar, W.G., and Paulino, G.H. (2005). Disk-shaped compact tension test for asphalt concrete fracture. Experimental Mechanics, 45(3), 270-277. https://doi.org/10.1177/0014485105053205"],
     },
     "idt": {
         "name": "IDT strength",
@@ -275,7 +283,8 @@ TESTS = {
             {"key": "rate", "label": "LLD rate", "unit": "mm/min", "dp": 1},
         ],
         "table": ["Pmax", "St", "St_psi"],
-        "refs": ["AASHTO T 322-07. Determining the Creep Compliance and Strength of Hot Mix Asphalt (HMA) Using the Indirect Tensile Test Device. Strength part only."],
+        "refs": ["AASHTO T 322-07. Determining the Creep Compliance and Strength of Hot Mix Asphalt (HMA) Using the Indirect Tensile Test Device. Strength part only.",
+                 "Roque, R., and Buttlar, W.G. (1992). The development of a measurement and analysis system to accurately determine asphalt concrete properties using the indirect tensile mode. Journal of the Association of Asphalt Paving Technologists, 61, 304-332."],
     },
 }
 

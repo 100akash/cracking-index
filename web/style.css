@@ -33,7 +33,7 @@ p { margin: 0; }
 .topbar { display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 0 24px; background: var(--navy); color: #FFF; position: sticky; top: 0; z-index: 20; }
 .brand { display: flex; align-items: center; gap: 10px; color: #FFF; text-decoration: none; font: 800 19px var(--display); letter-spacing: .02em; text-transform: uppercase; }
 .brand svg { width: 30px; height: 30px; }
-.topnote { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.07); color: #FFF; font: 500 13px var(--sans); letter-spacing: .01em; white-space: nowrap; }
+.topnote { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.07); color: #FFF; font: 500 13px var(--sans); letter-spacing: .01em; white-space: nowrap; }
 .topnote svg { width: 18px; height: 18px; color: var(--navy-soft); }
 .steps { display: flex; gap: 6px; padding: 0 24px; background: #FFF; border-bottom: 1px solid var(--rule); position: sticky; top: 60px; z-index: 15; overflow-x: auto; }
 .step { display: flex; align-items: center; gap: 10px; padding: 12px 14px 10px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; white-space: nowrap; min-height: 52px; }
@@ -190,3 +190,22 @@ dialog textarea { width: 100%; min-height: 160px; font-family: var(--mono); font
 .si.attn { border-color: var(--orange); }
 .si.attn::after { content: ""; position: absolute; top: -4px; right: -4px; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
 ul.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+
+/* header links and references page */
+.toplinks { margin-left: auto; display: flex; gap: 18px; align-items: center; }
+.toplinks a { white-space: nowrap; color: #FFF; text-decoration: none; font-weight: 600; font-size: 14px; padding: 6px 2px; border-bottom: 2px solid transparent; }
+.toplinks a:hover, .toplinks a[aria-current] { border-bottom-color: var(--orange); }
+.topbar .topnote { margin-left: 18px; }
+.disclaimer a { color: var(--muted2); }
+main.refs { max-width: 980px; }
+.refs nav.row a { color: var(--navy); font-weight: 600; }
+.refgroup { margin-top: 10px; font-size: 18px; color: var(--orange-dk); }
+.ref { scroll-margin-top: 80px; }
+.refhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.refhead h3 { font: 800 22px var(--display); text-transform: uppercase; }
+.ref dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 18px; margin: 0; }
+.ref dt { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+.ref dd { margin: 0; }
+.ref ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.ref a { word-break: break-word; }
+@media (max-width: 640px) { .ref dl { grid-template-columns: 1fr; gap: 4px; } .ref dd { margin-bottom: 8px; } .toplinks { gap: 12px; } .brand { font-size: 16px; } }
