@@ -12,7 +12,7 @@ import numpy as np
 import core
 import specs
 
-VERSION = "0.1"
+VERSION = "0.2"
 SHORT = specs.SHORT
 NAVY, ORANGE, GREY = "#13294B", "#FF5F05", "#9A968C"
 PAL = [NAVY, ORANGE, "#7A1F1F", "#1B6B3A", "#5B6F95", "#C84113"]
@@ -516,7 +516,8 @@ def _method_text(test, st):
                  "Post-peak: 4-term Gaussian sum, bounds ±10 on d and e, f lower bound tried at 0.9, 0.7, 0.5, 0.3, 0.1, 0.05, 0.01, 0.005, 0.001 until R² > 0.997. "
                  "Inflection points are roots of the second derivative with a negative slope. The tangent must stay at or below the curve until it drops to 30% of P_i; "
                  "of the candidates that pass, the steepest is used. Post-peak work is integrated at 0.005 mm steps.",
-                 "Gf = Wf / ((r − a) t) × 10^6. FI = Gf / |m| × 0.01. Strength P/(2rt) and secant modulus at u0/2 are extra outputs, not part of T 393."],
+                 "Gf = Wf / ((r − a) t) × 10^6. FI = Gf / |m| × 0.01. Strength P/(2rt) and secant modulus at u0/2 are extra outputs, not part of T 393.",
+                 "Other indices, not part of T 393: CRI = Gf / Pmax (Kaseer et al. 2018). BCI = 0.01 Gf L75 (Majidifard et al. 2021), with L75 the LLD where the load falls to 75% of peak after the peak, on the fitted curve in fitted mode and the recorded data in raw mode."],
         "idealct": ["Wf is the trapezoid area of the recorded curve from the start load to 100 N. Gf = Wf / (D t) × 10^6. "
                     "l85, l75, l65 are the first crossings after the peak (on the fitted curve in fitted mode, on the recorded data in raw mode). "
                     "|m75| is a least-squares line through all recorded points between l85 and l65, in N/m. CT index = (t/62)(l75/D)(Gf/|m75|) × 10^6.",
@@ -535,7 +536,8 @@ def _method_text(test, st):
         "sltscb": ["G_f-pre = trapezoid area to the peak / ((r − a) t). Loading stiffness S: a window of 15% of the pre-peak points is moved along the ascending branch; "
                    "the window with the highest R²_penalized = R²_raw − 0.05 l_m² is used, with l_m = P_avg/P_max − 0.5. LCI = G_f-pre / S."],
         "dct": ["CMOD vs. time is fitted with a least-squares line over the record (D7313 8.1). CMOD_fit = slope × time. "
-                "The area under load vs. CMOD_fit to 100 N uses the quadrangle rule. Gf = area / (B (W − a)). The CMOD rate check uses the fitted slope."],
+                "The area under load vs. CMOD_fit to 100 N uses the quadrangle rule. Gf = area / (B (W − a)). The CMOD rate check uses the fitted slope.",
+                "Other index, not part of D7313: FST = Gf / Sf (Zhu et al. 2017), with fracture strength Sf = 2 Pmax (3W − a) / (B a²), a the ligament length and W the distance from the load line to the back edge (Apeagyei et al. 2006). FST is reported in 10^-6 m."],
         "idt": ["S_t = 2 P_f / (π b D), with P_f the peak load (T 322, 12.3). Creep compliance is not computed."],
     }[test]
     return [common] + t

@@ -91,6 +91,15 @@ def ifit(rec, dims, st):
         "secant": float(f6(u0 / 2) / (u0 / 2)) if u0 > 0 else float("nan"),
         "r2_pre": r2pre, "r2_post": r2post, "lig_used": lig,
     })
+    # other indices: CRI (Kaseer et al. 2018) and BCI (Majidifard et al. 2021)
+    out["CRI"] = Gf / out["Pmax"] if out["Pmax"] > 0 else float("nan")
+    if fit is not None and fitted:
+        xs = np.arange(u0, uu[-1] + 1e-12, 0.001)
+        L75, _ = interp_cross(xs, gauss4(xs, *fit["p"]), 0.75 * out["Pmax"], 0)
+    else:
+        L75, _ = interp_cross(u, P, 0.75 * out["Pmax"], ip)
+    out["L75"] = L75
+    out["BCI"] = 0.01 * Gf * L75 if math.isfinite(L75) else float("nan")
     plot = {"x": "LLD (mm)", "y": "Load (kN)",
             "series": [{"name": "Raw data", "cls": "raw", "pts": _pts(u, P)}], "points": [], "lines": []}
     if fit is not None:
@@ -400,6 +409,11 @@ def dct(rec, dims, st):
     Gf = area / (B * lig) * 1e6
     out.update({"Gf": Gf, "area": area, "cmod_end": float(cmfit[-1]), "cmod_r2": rr, "cmod_slope": a1,
                 "cmod_icpt": a0})
+    # other index: FST = Gf/Sf (Zhu et al. 2017), Sf after Apeagyei et al. (2006)
+    W = dims.get("L") or 110.0
+    Sf = 2 * out["Pmax"] * 1e3 * (3 * W - lig) * 1e-3 / ((B * 1e-3) * (lig * 1e-3) ** 2)  # Pa
+    out["Sf"] = Sf / 1e6
+    out["FST"] = Gf / Sf * 1e6 if Sf > 0 else float("nan")
     out.pop("u_peak", None)
     plot = {"x": "CMOD (mm)", "y": "Load (kN)",
             "series": [{"name": "Load vs. CMOD (raw)", "cls": "raw", "pts": _pts(cm, P)},

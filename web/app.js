@@ -115,8 +115,8 @@
     S.step = n; S.seen = Math.max(S.seen || 1, n); render(); window.scrollTo(0, 0);
     if (n === 3) refreshPreview();
   }
-  const footer = () => `<p class="disclaimer">Check results against the standard before use. Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i> (Version 0.1). akashto.com/cracking-index</p>
-    <p class="disclaimer">v0.1 · <a href="references.html">References and changes</a> · <a href="https://github.com/100akash/cracking-index/issues" target="_blank" rel="noopener">Report an issue</a></p>`;
+  const footer = () => `<p class="disclaimer">Check results against the standard before use. Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i> (Version 0.2). akashto.com/cracking-index</p>
+    <p class="disclaimer">v0.2 · <a href="references.html">References and changes</a> · <a href="https://github.com/100akash/cracking-index/issues" target="_blank" rel="noopener">Report an issue</a></p>`;
 
   function render() {
     renderSteps();
@@ -498,10 +498,12 @@
         <span class="s">SD ${s.sd == null ? "–" : fmtOut(o, s.sd)} · COV ${s.cov == null ? "–" : s.cov.toFixed(1) + "%"} · n = ${s.n}${nInc < reps.length ? ` of ${reps.length}` : ""}</span>
         ${nInc < reps.length && sAll.n ? `<span class="s">All ${sAll.n}: ${fmtOut(o, sAll.mean)}, COV ${sAll.cov == null ? "–" : sAll.cov.toFixed(1) + "%"}</span>` : ""}</div>`;
     }).join("");
-    const more = sp.outputs.filter((o) => !o.main).map((o) => {
+    const moreItem = (o) => {
       const s = stats(reps.map((r, i) => (inc[i] && r.outputs ? r.outputs[o.key] : null)));
       return `<div><dt>${o.label}</dt><dd>${fmtOut(o, s.mean)} ${o.unit}${s.cov != null ? ` <span class="muted small">· COV ${s.cov.toFixed(1)}%</span>` : ""}</dd></div>`;
-    }).join("");
+    };
+    const more = sp.outputs.filter((o) => !o.main && !o.other).map(moreItem).join("");
+    const others = sp.outputs.filter((o) => o.other).map(moreItem).join("");
     const keys = sp.table;
     const olab = Object.fromEntries(sp.outputs.map((o) => [o.key, o]));
     const dimKeys = sp.dims.filter((d) => ["t", "B", "lig", "D"].includes(d.key)).slice(0, 2);
@@ -541,7 +543,9 @@
       <section class="tiles">${tiles}</section>
       ${(() => { const cv = idxCov(); return cv != null && cv > COV_FLAG && nInc >= 3 ? `<div class="notice">The ${esc(S.short[sp.index] || sp.index)} COV of the included set is ${cv.toFixed(1)}%. Check the curves and the "Remove one outlier" option. The tool flags a COV above ${COV_FLAG}%.</div>` : ""; })()}
       ${nInc < sp.min_reps ? `<div class="notice">Only ${nInc} replicate${nInc === 1 ? " is" : "s are"} included. ${std} asks for at least ${sp.min_reps} specimens per result.</div>` : ""}
-      <section class="card"><details class="more"><summary>More outputs (included replicates)</summary><dl class="kv">${more}</dl></details></section>
+      <section class="card"><details class="more"><summary>More outputs (included replicates)</summary><dl class="kv">${more}</dl></details>
+        ${others ? `<details class="more"><summary>Other indices (not in ${esc(std)})</summary><dl class="kv">${others}</dl>
+          <p class="small muted">Proposed in the literature. Papers are on the <a href="references.html#${S.run.test}">References page</a>. The main results above follow the standard.</p></details>` : ""}</section>
       <section class="card"><div class="row"><h3>${mark(stepState(4))}Replicates</h3><span class="spacer"></span>
         <label class="toggle"><input type="checkbox" data-act="outlier" ${S.outlier ? "checked" : ""}><span>Remove one outlier<small>Drops the ${esc(idx.label.replace(/<[^>]+>/g, ""))} farthest from the mean of the included replicates</small></span></label></div>
         <div class="tblwrap"><table class="tbl"><thead><tr><th>Include</th><th>Specimen</th>${dimKeys.map((d) => `<th class="n">${esc(d.label.split(" ")[0])} (mm)</th>`).join("")}${keys.map((k) => `<th class="n" title="${esc(olab[k].label.replace(/<[^>]+>/g, ""))}">${esc(S.short[k] || k)}</th>`).join("")}<th>Checks</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
