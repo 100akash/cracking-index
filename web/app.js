@@ -14,7 +14,7 @@
     domain: "service", test: "ifit", temp: "25.0", tempUnit: "C",
     files: [], active: null, confirmed: {}, checks: {}, previewFile: null,
     settings: {}, dimMode: "avg", dims: {}, labels: {},
-    batch: { project: "", mix: "", date: "", operator: "", vma: "", nmas: "", binder: "" },
+    batch: { project: "", mix: "", date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), vma: "", nmas: "", binder: "", pg: "" },
     preview: null, previewBusy: false,
     run: null, manual: {}, reasons: {}, outlier: false, curveSel: "all",
     exp: { format: "xlsx", include_excluded: true }, busy: false,
@@ -89,11 +89,10 @@
         <div class="art">${ART[k] || ""}</div>
         <h3>${esc(t.name)}</h3>
         <span class="std">${t.standard} · ${esc(t.geometry)}</span>
-        <div class="row"><span class="chip navy">${t.control_label} · ${fmtRate(t.rate)} ${t.rate_unit}</span>
-          <span class="chip">${t.mode === "fitted" ? "Fitted" : "Raw"} by default</span></div>
+        <div class="row"><span class="chip navy">${t.control_label} · ${fmtRate(t.rate)} ${t.rate_unit}</span></div>
         <p class="small muted">Outputs: ${outs}${k === "idealct" ? ", plus N<sub>flex</sub>." : "."}</p>
         <span class="small" style="color:var(--navy)"><strong>Needs:</strong> ${needsText(t)}</span>
-        ${t.domain === "low" ? `<span class="small muted">${esc(t.temp_note)}</span>` : ""}
+        <span class="small muted oneline" title="${esc(t.temp_note)}">${esc(t.temp_note)}</span>
         <button class="btn${cur ? " navy" : ""}" data-act="pick" data-k="${k}">${cur ? "Selected" : "Select"}</button>
       </article>`;
     }).join("");
@@ -109,7 +108,7 @@
           <div class="stack"><span class="label">Test temperature (record only)</span>
             <div class="row"><input type="text" inputmode="decimal" class="num" id="temp" value="${esc(S.temp)}" aria-label="Test temperature">
               <div class="seg" role="group" aria-label="Temperature unit"><button data-act="tunit" data-u="C" aria-pressed="${S.tempUnit === "C"}">°C</button><button data-act="tunit" data-u="F" aria-pressed="${S.tempUnit === "F"}">°F</button></div></div>
-            <span class="small muted">${S.domain === "service" ? "Standard value for these tests: 25 °C." : "Each standard gives its own rule. It shows on the card."}</span>
+            <span class="small muted">The usual temperature is on each card.</span>
           </div>
         </div>
       </section>
@@ -122,7 +121,6 @@
     if (t.needs.length === 1) return "load (time and LLD for the rate check)";
     const m = { time: "time", load: "load", lld: "LLD", cmod: "CMOD" };
     let s = t.needs.map((x) => m[x]).join(", ");
-    if (S.test && t === S.specs.scb) s = "time, load, CMOD, LLD (one or two)";
     if (t.optional.includes("cmod")) s += " (CMOD optional)";
     return s;
   }
@@ -295,11 +293,11 @@
     const preview = `<section class="card"><div class="row"><h3>Fit preview</h3><span class="spacer"></span>
       <div class="tabs">${S.files.map((f) => `<button data-act="pv" data-id="${f.id}" aria-pressed="${f.id === S.previewFile}">${esc(label(f))}</button>`).join("")}</div></div>${pvHtml}</section>`;
     const b = S.batch;
-    const batch = `<section class="card"><h3>Batch details</h3><p class="small muted">For the record and the report. Not used in calculations.</p>
-      <div class="fgrid">
-        ${bf("project", "Project ID")}${bf("mix", "Mix ID")}<label class="f">Test date<input type="date" data-batch="date" value="${esc(b.date)}"></label>${bf("operator", "Operator")}
-        ${bf("vma", "VMA (%), optional")}${bf("nmas", "NMAS (mm), optional")}${bf("binder", "Binder content (%), optional")}
-        <label class="f">Test temperature<input type="text" value="${esc(S.temp)} °${S.tempUnit} (from step 1)" disabled></label>
+    const batch = `<section class="card"><h3>Batch details (optional)</h3><p class="small muted">For the record and the report. Not used in calculations.</p>
+      <div class="fgrid4">
+        ${bf("project", "Project ID")}${bf("mix", "Mix ID")}<label class="f">Test date<input type="date" data-batch="date" value="${esc(b.date)}"></label>
+        <label class="f">Test temperature (°${S.tempUnit})<input type="text" inputmode="decimal" id="temp2" value="${esc(S.temp)}"></label>
+        ${bf("vma", "Design VMA (%)")}${bf("nmas", "NMAS (mm)")}${bf("binder", "Binder content (%)")}${bf("pg", "Binder PG", "e.g. 64-22")}
       </div></section>`;
     const ready = S.files.every((f) => dimsReady(f.id));
     const pending = S.files.filter((f) => !dimsReady(f.id)).length;
@@ -316,7 +314,7 @@
       ${batch}${dimsCard()}${runCard}
       <div class="foot"><button class="btn" data-go="2">Back</button></div>`;
   }
-  const bf = (k, l) => `<label class="f">${l}<input type="text" data-batch="${k}" value="${esc(S.batch[k])}"></label>`;
+  const bf = (k, l, ph) => `<label class="f">${l}<input type="text" data-batch="${k}" value="${esc(S.batch[k])}"${ph ? ` placeholder="${ph}"` : ""}></label>`;
   function label(f) { return S.labels[f.id] != null ? S.labels[f.id] : stem(f.name); }
 
   /* dimensions: per file, per key: {v: [readings] or number, ok: confirmed} */
@@ -799,7 +797,7 @@
   });
   app.addEventListener("input", (e) => {
     const t = e.target;
-    if (t.id === "temp") { S.temp = t.value; return; }
+    if (t.id === "temp" || t.id === "temp2") { S.temp = t.value; return; }
     if (t.dataset.batch) { S.batch[t.dataset.batch] = t.value; return; }
     if (t.dataset.label) { S.labels[t.dataset.label] = t.value; return; }
     if (t.dataset.av) { dimRow(t.dataset.av).av.vals[0] = t.value; return; }

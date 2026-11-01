@@ -229,8 +229,8 @@ def _batch_rows(batch):
     t = b.get("temp")
     temp = "–" if t in (None, "") else f"{t} °{b.get('temp_unit', 'C')}"
     rows = [("Project ID", b.get("project") or "–"), ("Mix ID", b.get("mix") or "–"), ("Test date", b.get("date") or "–"),
-            ("Operator", b.get("operator") or "–"), ("Test temperature", temp)]
-    for k, lab in (("vma", "VMA (%)"), ("nmas", "NMAS (mm)"), ("binder", "Binder content (%)")):
+            ("Test temperature", temp)]
+    for k, lab in (("vma", "Design VMA (%)"), ("nmas", "NMAS (mm)"), ("binder", "Binder content (%)"), ("pg", "Binder PG")):
         if b.get(k) not in (None, ""):
             rows.append((lab, b[k]))
     return rows

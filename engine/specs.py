@@ -25,8 +25,8 @@ TESTS = {
             {"key": "a", "label": "Notch a", "unit": "mm", "default": 15.0, "lo": 14.0, "hi": 16.0, "readings": 2},
             {"key": "lig", "label": "Ligament r − a", "unit": "mm", "default": None, "derived": "D/2-a"},
         ],
-        "dims_note": "Lab tolerances: t 50 ± 1, D 150 ± 1, a 15 ± 1 mm. Cores may be 25 to 50 mm thick.",
-        "temp_note": "Standard value for this test: 25 °C.",
+        "dims_note": "Lab tolerances: t 50 ± 1, D 150 ± 1, a 15 ± 1 mm.",
+        "temp_note": "Temp: 25 °C",
         "min_reps": 3,
         "index": "FI",
         "outputs": [
@@ -66,7 +66,7 @@ TESTS = {
             {"key": "D", "label": "Diameter D", "unit": "mm", "default": 150.0, "lo": 148.0, "hi": 152.0, "readings": 2},
         ],
         "dims_note": "Lab tolerances: t 62 ± 1, D 150 ± 2 mm.",
-        "temp_note": "Standard value for this test: 25 °C.",
+        "temp_note": "Temp: 25 °C",
         "min_reps": 3,
         "index": "CT",
         "outputs": [
@@ -111,7 +111,7 @@ TESTS = {
             {"key": "d", "label": "Hole d", "unit": "mm", "default": 27.5, "lo": 25.5, "hi": 29.5, "readings": 2},
         ],
         "dims_note": "Draft tolerances: t 62 ± 1, D 150 ± 2, hole 27.5 ± 2 mm.",
-        "temp_note": "Standard value for this test: 25 °C.",
+        "temp_note": "Temp: 25 °C",
         "min_reps": 3,
         "index": "DI",
         "outputs": [
@@ -151,7 +151,7 @@ TESTS = {
             {"key": "lig", "label": "Ligament r − a", "unit": "mm", "default": None, "derived": "D/2-a"},
         ],
         "dims_note": "T 394 nominals: t 25, D 150, a 15 mm. Report t and r to the nearest 0.5 mm.",
-        "temp_note": "Each standard gives its own rule. T 394: PG low + 10 °C and PG low − 2 °C.",
+        "temp_note": "Temp: PG low +10 °C and −2 °C",
         "min_reps": 3,
         "index": "Gf",
         "outputs": [
@@ -191,7 +191,7 @@ TESTS = {
             {"key": "lig", "label": "Ligament r − a", "unit": "mm", "default": None, "derived": "D/2-a"},
         ],
         "dims_note": "Draft nominals: t 50, D 150, a 15 mm, span 120 mm.",
-        "temp_note": "Temp: lowest annual environmental temperature.",
+        "temp_note": "Temp: annual lowest environmental",
         "min_reps": 3,
         "index": "LCI",
         "outputs": [
@@ -230,7 +230,7 @@ TESTS = {
             {"key": "D", "label": "Diameter D", "unit": "mm", "default": 150.0, "lo": 145.0, "hi": 155.0, "readings": 2},
         ],
         "dims_note": "D7313 nominals: B 50, ligament 82.5, D 150 mm.",
-        "temp_note": "Temp: PG low + 10 °C.",
+        "temp_note": "Temp: PG low + 10 °C",
         "min_reps": 3,
         "index": "Gf",
         "outputs": [
@@ -263,7 +263,7 @@ TESTS = {
             {"key": "D", "label": "Diameter D", "unit": "mm", "default": 150.0, "lo": 148.0, "hi": 152.0, "readings": 2},
         ],
         "dims_note": "T 322: thickness 38 to 50 mm, diameter 150 mm.",
-        "temp_note": "Temp: middle creep temperature.",
+        "temp_note": "Temp: middle creep temperature",
         "min_reps": 3,
         "index": "St",
         "outputs": [
