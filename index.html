@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Process asphalt mixture cracking test files: I-FIT, IDEAL-CT, DONUT, SCB, SLT-SCB, DCT and IDT strength. Runs in your browser.">
+<title>Cracking Test Analyzer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313294B'/%3E%3Cpath d='M6 25 C10 8 14 8 17 14 S24 24 27 9' stroke='%23FF5F05' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Overpass:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="web/style.css?v=1">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="./" aria-label="Cracking Test Analyzer, start over">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#FFFFFF" fill-opacity="0.12"/><path d="M6 25 C10 8 14 8 17 14 S24 24 27 9" stroke="#FF5F05" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
+    <span>Cracking Test Analyzer</span>
+  </a>
+  <span class="topnote">Runs in your browser</span>
+</header>
+<nav class="steps" id="steps" aria-label="Steps"></nav>
+<main id="app">
+  <div class="boot">
+    <h1>Cracking Test Analyzer</h1>
+    <p>Loading the calculation engine. The first visit takes a few seconds. After that it is cached.</p>
+    <div class="bar"><i></i></div>
+    <noscript><p class="err">This tool needs JavaScript.</p></noscript>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="dialog"></dialog>
+<script>window.CTA_VERSION = "1";</script>
+<script src="web/art.js?v=1"></script>
+<script src="web/webapi.js?v=1"></script>
+<script src="web/app.js?v=1"></script>
+</body>
+</html>

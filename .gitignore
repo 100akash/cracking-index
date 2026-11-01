@@ -1,0 +1,8 @@
+# keep your own test files out of the repo
+data/
+my-data/
+*.zip
+__pycache__/
+*.pyc
+.pytest_cache/
+*.tmp
