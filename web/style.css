@@ -55,7 +55,8 @@ main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 48px; display: flex
 .tests { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--rule); padding-top: 18px; }
 .disclaimer { font-size: 13px; color: var(--muted2); }
-@media (max-width: 980px) { .grid2, .grid-side { grid-template-columns: minmax(0, 1fr); } }
+.grid-side.narrow { grid-template-columns: minmax(0, 1fr) 380px; }
+@media (max-width: 980px) { .grid2, .grid-side, .grid-side.narrow { grid-template-columns: minmax(0, 1fr); } }
 
 /* buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--navy); background: #FFF; color: var(--navy); font-weight: 600; cursor: pointer; text-decoration: none; }
@@ -188,3 +189,4 @@ dialog textarea { width: 100%; min-height: 160px; font-family: var(--mono); font
 .si.done::after { content: "✓"; color: #FFF; font-size: 10px; font-weight: 800; position: absolute; inset: 0; display: grid; place-items: center; line-height: 1; }
 .si.attn { border-color: var(--orange); }
 .si.attn::after { content: ""; position: absolute; top: -4px; right: -4px; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+ul.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }

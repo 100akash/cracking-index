@@ -53,19 +53,20 @@
   function stepState(n) {
     if (n === 1) return S.test && String(S.temp).trim() !== "" ? "done" : "todo";
     if (n === 2) {
-      if (!S.files.length) return "todo";
+      if (!S.files.length || (S.seen || 1) < 2) return "todo";
       const bad = S.files.some((f) => { const c = S.checks[f.id]; return !c || c.error || (c.rate && c.rate.ok === false) || (c.hz && c.hz.ok === false); });
       return allConfirmed() && !bad ? "done" : "attn";
     }
     if (n === 3) {
-      if (!S.files.length) return "todo";
+      if (!S.files.length || (S.seen || 1) < 3) return "todo";
       if (!S.files.every((f) => dimsReady(f.id))) return "attn";
       return S.run ? "done" : "todo";
     }
     if (n === 4) {
       if (!S.run) return "todo";
       const { inc } = included();
-      const ok = inc.filter(Boolean).length >= S.specs[S.run.test].min_reps && S.run.replicates.every((r) => !r.error && !r.warnings.length);
+      const cv = idxCov();
+      const ok = inc.filter(Boolean).length >= S.specs[S.run.test].min_reps && S.run.replicates.every((r) => !r.error && !r.warnings.length) && !(cv != null && cv > COV_FLAG);
       return ok ? "done" : "attn";
     }
     return "todo";
@@ -80,6 +81,8 @@
       return `<button class="step" data-go="${n}" ${cur ? 'aria-current="step"' : ""} ${canGo(n) ? "" : "disabled"} title="${STATE_TITLE[st]}">
         <span class="n ${st}">${n}</span><span>${t}${sub}</span></button>`;
     }).join("");
+    const cur = stepsNav.querySelector("[aria-current]");
+    if (cur && stepsNav.scrollWidth > stepsNav.clientWidth) stepsNav.scrollLeft = cur.offsetLeft - 16;
   }
   const mark = (st) => `<i class="si ${st}" title="${STATE_TITLE[st] || ""}" aria-label="${STATE_TITLE[st] || ""}"></i>`;
   function guide() {
@@ -96,14 +99,20 @@
       if (p) { txt = `Enter the dimensions or accept the defaults for ${p} specimen${p === 1 ? "" : "s"}.`; btn = `<button class="btn soft small" data-act="acceptall">Accept all defaults</button>`; }
       else { txt = "Dimensions are in. Check the fit, then run the analysis."; btn = `<button class="btn primary small" data-act="run">Run analysis</button>`; }
     } else if (S.step === 4) {
-      txt = stepState(4) === "done" ? "All replicates pass their checks. Review the results, then export." : "Review the warnings and the replicates, then export.";
+      const sp4 = S.specs[S.run.test], { inc } = included(), nI = inc.filter(Boolean).length;
+      const nW = S.run.replicates.filter((r) => r.error || (r.warnings && r.warnings.length)).length;
+      const cv = idxCov();
+      if (nW) txt = `${nW} replicate${nW === 1 ? " has" : "s have"} warnings. Read them in the Replicates table, then export.`;
+      else if (nI < sp4.min_reps) txt = `Only ${nI} replicate${nI === 1 ? " is" : "s are"} included. ${esc(sp4.standard_plain || sp4.standard)} asks for at least ${sp4.min_reps}. Export, or include more.`;
+      else if (cv != null && cv > COV_FLAG) txt = `All checks pass, but the ${esc(S.short[sp4.index] || sp4.index)} COV is ${cv.toFixed(1)}%. Look at the curves for an outlier, then export.`;
+      else txt = "All replicates pass their checks. Review the results, then export.";
       btn = `<button class="btn primary small" data-act="export" ${S.busy ? "disabled" : ""}>${S.busy ? '<span class="busy"></span> Building files' : "Export results (.zip)"}</button>`;
     }
     return `<div class="guide"><span class="pill">Next</span><span class="gt">${txt}</span>${btn}</div>`;
   }
   function go(n) {
     if (!canGo(n)) return;
-    S.step = n; render(); window.scrollTo(0, 0);
+    S.step = n; S.seen = Math.max(S.seen || 1, n); render(); window.scrollTo(0, 0);
     if (n === 3) refreshPreview();
   }
   const footer = () => `<p class="disclaimer">Check results against the standard before use. Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i>. akashto.com/cracking-index</p>`;
@@ -272,7 +281,7 @@
     afterFns.push(() => {});
     return `<div class="grid2">
       <section class="card"><h3>${mark(S.files.every((f) => { const c = S.checks[f.id]; return c && !c.error && c.rate.ok !== false && c.hz.ok !== false; }) ? "done" : "attn")}Loading checks</h3>
-        <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate</th><th>${esc(sp.standard_plain || sp.standard.replace(/<[^>]+>/g, ""))} target</th><th>Sampling</th><th>Test segment</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate</th><th>Target</th><th>Sampling</th><th>Segment</th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="small muted">Rate is a line fit of ${sp.control === "cmod" ? "CMOD" : "LLD"} vs. time from 25% of peak (rising) to the ${sp.end_load} kN cut-off${S.test === "dct" ? " (D7313 uses the slope of CMOD vs. time over the whole record)" : ""}. Checks warn only. They never block a run.</p>
       </section>
       <section class="card"><div class="row"><h3>Preview</h3><span class="spacer"></span>
@@ -344,14 +353,14 @@
     const pending = S.files.filter((f) => !dimsReady(f.id)).length;
     const checks = S.files.map((f) => S.checks[f.id]).filter(Boolean);
     const badChecks = checks.filter((c) => (c.rate && c.rate.ok === false) || (c.hz && c.hz.ok === false)).length;
-    const runCard = `<section class="card navy"><ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+    const runCard = `<section class="card navy"><ul class="small checklist">
         <li class="ok">✓ ${S.files.length} file${S.files.length === 1 ? "" : "s"} mapped</li>
         <li class="${dev.length ? "warn" : "ok"}">${dev.length ? "! Settings differ from " + std : "✓ Settings follow " + std}</li>
         ${badChecks ? `<li class="warn">! ${badChecks} file${badChecks === 1 ? "" : "s"} with a rate or sampling warning</li>` : ""}
         ${pending ? `<li class="warn">! ${pending} specimen${pending === 1 ? "" : "s"} still show grey defaults. Type values or accept the defaults to run.</li>` : '<li class="ok">✓ Dimensions entered</li>'}</ul>
       <button class="btn primary run" data-act="run" ${ready && !S.busy ? "" : "disabled"}>${S.busy ? '<span class="busy"></span> Running' : `Run analysis · ${S.files.length} replicate${S.files.length === 1 ? "" : "s"}`}</button></section>`;
     return `<section class="stack"><h1>Process</h1><p class="lead">Check the settings, look at the fit, enter specimen details, then run. Defaults follow ${std}. Anything you change from the standard is flagged in the report.</p></section>
-      <div class="grid-side" style="grid-template-columns:minmax(0,1fr) 380px">${preview}${settings}</div>
+      <div class="grid-side narrow">${preview}${settings}</div>
       ${batch}${dimsCard()}${runCard}
       <div class="foot"><button class="btn" data-go="2">Back</button></div>`;
   }
@@ -428,7 +437,7 @@
     }).join("");
     return `<section class="card"><div class="row"><h3>${mark(S.files.every((f) => dimsReady(f.id)) ? "done" : "attn")}Specimen dimensions</h3><span class="spacer"></span>
         <div class="seg" role="group"><button data-act="dimmode" data-v="avg" aria-pressed="${S.dimMode === "avg"}">Averaged values</button><button data-act="dimmode" data-v="ind" aria-pressed="${S.dimMode === "ind"}">Individual readings</button></div>
-        <button class="btn small" data-act="paste">Paste from Excel</button><button class="btn soft small" data-act="acceptall">Accept all defaults</button></div>
+        <button class="btn small" data-act="paste">Paste from Excel</button>${S.files.every((f) => dimsReady(f.id)) ? "" : '<button class="btn soft small" data-act="acceptall">Accept all defaults</button>'}</div>
       <div class="tblwrap"><table class="tbl"><thead><tr><th>Specimen</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>
       <p class="small muted">Grey values are nominals. Type a value or accept the default for each specimen. ${esc(sp.dims_note)}${sp.dims.some((d) => d.derived) ? " Ligament fills from r − a unless you measured it." : ""}${S.dimMode === "ind" ? " Individual readings are averaged." : ""}</p>
     </section>`;
@@ -451,6 +460,13 @@
       }
     }
     return { inc, why };
+  }
+  const COV_FLAG = 25;  // tool choice, not a limit from the standards
+  function idxCov() {
+    if (!S.run) return null;
+    const sp = S.specs[S.run.test], { inc } = included();
+    const s = stats(S.run.replicates.map((r, i) => (inc[i] && r.outputs ? r.outputs[sp.index] : null)));
+    return s.cov;
   }
   function stats(vals) {
     const a = vals.filter(fin);
@@ -522,6 +538,7 @@
       <div class="row">${chips.join("")}</div>
       <p class="small ${allChecks ? "ok" : "warn"}">${reps.length} replicate${reps.length === 1 ? "" : "s"} · ${allChecks ? "all rate and sampling checks pass" : "some checks warn"} · ${reps.length - nInc} excluded</p></section>
       <section class="tiles">${tiles}</section>
+      ${(() => { const cv = idxCov(); return cv != null && cv > COV_FLAG && nInc >= 3 ? `<div class="notice">The ${esc(S.short[sp.index] || sp.index)} COV of the included set is ${cv.toFixed(1)}%. Check the curves and the "Remove one outlier" option. The tool flags a COV above ${COV_FLAG}%.</div>` : ""; })()}
       ${nInc < sp.min_reps ? `<div class="notice">Only ${nInc} replicate${nInc === 1 ? " is" : "s are"} included. ${std} asks for at least ${sp.min_reps} specimens per result.</div>` : ""}
       <section class="card"><details class="more"><summary>More outputs (included replicates)</summary><dl class="kv">${more}</dl></details></section>
       <section class="card"><div class="row"><h3>${mark(stepState(4))}Replicates</h3><span class="spacer"></span>
@@ -530,7 +547,7 @@
         <p class="small muted">Untick any row to exclude it by hand. Stats update right away, and the reason goes into the report. Warnings never remove a replicate on their own.</p>
         ${warnList ? `<div class="notice"><strong>Warnings</strong><ul>${warnList}</ul></div>` : ""}
       </section>
-      <div class="grid-side" style="grid-template-columns:minmax(0,1fr) 380px">
+      <div class="grid-side narrow">
         <section class="card"><div class="row"><h3>Curves</h3><span class="spacer"></span>
           <div class="tabs">${curveIds.map((id) => `<button data-act="curve" data-id="${id}" aria-pressed="${cur === id}">${id === "all" ? "All" : esc(reps.find((r) => r.id === id).label)}</button>`).join("")}</div></div>${curve}</section>
         <section class="card"><h3>${idx.label} by replicate</h3>${bars}<p class="small muted">Line: mean of the included set. Grey: excluded.</p></section>
@@ -716,7 +733,7 @@
     try {
       const r = await API("run", { test: S.test, settings: S.settings, files: S.files.map(filePayload) });
       S.run = r; S.manual = {}; S.reasons = {}; S.outlier = false; S.curveSel = "all";
-      S.busy = false; S.step = 4; render(); window.scrollTo(0, 0);
+      S.busy = false; S.step = 4; S.seen = 4; render(); window.scrollTo(0, 0);
     } catch (e) { S.busy = false; render(); toast(e.message, true); }
   }
   async function doExport() {
