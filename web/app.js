@@ -726,7 +726,15 @@
     if (!t || t.disabled) return;
     if (t.dataset.go) return go(+t.dataset.go);
     const a = t.dataset.act;
-    if (a === "domain") { S.domain = t.dataset.d; S.test = S.order[S.domain][0]; resetForTest(); render(); }
+    if (a === "domain") {
+      if (S.domain !== t.dataset.d) {
+        S.domain = t.dataset.d; S.test = S.order[S.domain][0];
+        const c = S.domain === "low" ? -12 : 25;  // usual starting values: 25 °C service, −12 °C low temperature
+        S.temp = (S.tempUnit === "F" ? c * 9 / 5 + 32 : c).toFixed(1);
+        resetForTest();
+      }
+      render();
+    }
     else if (a === "pick") { if (S.test !== t.dataset.k) { S.test = t.dataset.k; resetForTest(); } render(); }
     else if (a === "tunit") {
       const u = t.dataset.u, v = parseFloat(S.temp);

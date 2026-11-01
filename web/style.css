@@ -33,7 +33,8 @@ p { margin: 0; }
 .topbar { display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 0 24px; background: var(--navy); color: #FFF; position: sticky; top: 0; z-index: 20; }
 .brand { display: flex; align-items: center; gap: 10px; color: #FFF; text-decoration: none; font: 800 19px var(--display); letter-spacing: .02em; text-transform: uppercase; }
 .brand svg { width: 30px; height: 30px; }
-.topnote { margin-left: auto; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--navy-soft); }
+.topnote { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.07); color: #FFF; font: 500 13px var(--sans); letter-spacing: .01em; white-space: nowrap; }
+.topnote svg { width: 18px; height: 18px; color: var(--navy-soft); }
 .steps { display: flex; gap: 6px; padding: 0 24px; background: #FFF; border-bottom: 1px solid var(--rule); position: sticky; top: 60px; z-index: 15; overflow-x: auto; }
 .step { display: flex; align-items: center; gap: 10px; padding: 12px 14px 10px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; white-space: nowrap; min-height: 52px; }
 .step:disabled { cursor: default; opacity: .55; }
