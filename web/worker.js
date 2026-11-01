@@ -2,7 +2,8 @@
    The page sends {id, path, body}; the worker answers {id, out} where out is a JSON string.
    Files never leave this tab. */
 const q = new URL(self.location.href).searchParams;
-const BASE = q.get("pyodide") || "https://cdn.jsdelivr.net/npm/pyodide@0.29.4/";
+// The full distribution (with numpy, scipy, matplotlib). The npm path has only the core files.
+const BASE = q.get("pyodide") || "https://cdn.jsdelivr.net/pyodide/v0.29.4/full/";
 const VER = q.get("v") || "";
 const FILES = ["core.py", "parse.py", "specs.py", "methods.py", "report.py", "routes.py"];
 importScripts(BASE + "pyodide.js");
@@ -16,7 +17,9 @@ async function need(pkgs) {
   if (!todo.length) return;
   const urls = [];
   todo.forEach((p) => (VENDOR[p] ? VENDOR[p].forEach((w) => urls.push(new URL("../vendor/" + w, self.location.href).href)) : urls.push(p)));
-  await py.loadPackage(urls);
+  const errs = [];
+  await py.loadPackage(urls, { errorCallback: (m) => errs.push(m), messageCallback: () => {} });
+  if (errs.length) throw new Error("Could not load " + todo.join(", ") + ". " + errs.join(" "));
   todo.forEach((p) => loaded.add(p));
 }
 
