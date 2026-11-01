@@ -51,6 +51,9 @@ def _record(fid, roles, units, test):
     if P is None:
         raise ValueError("No load column is mapped.")
     P = P * parse.LOAD_UNITS[units.get("load") or "kn"]
+    P2 = col("load2")
+    if P2 is not None:  # two load cells: use their average
+        P = 0.5 * (P + P2 * parse.LOAD_UNITS[units.get("load2") or units.get("load") or "kn"])
     u = col("lld")
     if u is not None:
         u = u * parse.DISP_UNITS[units.get("lld") or "mm"]

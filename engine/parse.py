@@ -10,7 +10,7 @@ import re
 
 import numpy as np
 
-ROLES = ["time", "load", "lld", "lld2", "cmod", "ignore"]
+ROLES = ["time", "load", "load2", "lld", "lld2", "cmod", "ignore"]
 
 LOAD_UNITS = {"kn": 1.0, "n": 1e-3, "lbf": 4.4482216e-3, "lb": 4.4482216e-3, "kip": 4.4482216, "kgf": 9.80665e-3}
 DISP_UNITS = {"mm": 1.0, "in": 25.4, "um": 1e-3, "m": 1000.0, "cm": 10.0}
@@ -237,7 +237,7 @@ def guess_columns(header, units, arr):
     notes = []
     loads = [c for c in cols if "load" in c["scores"]]
     if len(loads) > 1:
-        notes.append("More than one load column. Check which one is the load cell you used.")
+        notes.append("More than one load column. Pick the load cell you used, or set the other one as Load 2 to average them.")
     lds = [c for c in cols if "lld" in c["scores"]]
     if len(lds) > 1:
         notes.append("More than one displacement column. Pick the one that is LLD.")

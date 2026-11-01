@@ -32,13 +32,13 @@
     t.textContent = msg; t.className = "toast show" + (bad ? " bad" : "");
     clearTimeout(toast._t); toast._t = setTimeout(() => (t.className = "toast"), bad ? 6000 : 3000);
   };
-  const ROLE_LABEL = { time: "Time", load: "Load", lld: "LLD", lld2: "LLD 2 (averaged)", cmod: "CMOD", ignore: "Ignore" };
+  const ROLE_LABEL = { time: "Time", load: "Load", load2: "Load 2 (averaged)", lld: "LLD", lld2: "LLD 2 (averaged)", cmod: "CMOD", ignore: "Ignore" };
   const UNITS = {
     time: [["s", "s"], ["ms", "ms"], ["min", "min"]],
     load: [["kn", "kN"], ["n", "N"], ["lbf", "lbf"], ["kip", "kip"]],
     disp: [["mm", "mm"], ["in", "in"], ["um", "µm"]],
   };
-  const unitKind = (role) => (role === "time" ? "time" : role === "load" ? "load" : ["lld", "lld2", "cmod"].includes(role) ? "disp" : null);
+  const unitKind = (role) => (role === "time" ? "time" : ["load", "load2"].includes(role) ? "load" : ["lld", "lld2", "cmod"].includes(role) ? "disp" : null);
   const unitText = (u) => ({ kn: "kN", n: "N", lbf: "lbf", kip: "kip", mm: "mm", in: "in", um: "µm", s: "s", ms: "ms", min: "min" }[u] || u || "");
 
   /* ------------------------------------------------------------ steps bar */
@@ -191,7 +191,7 @@
   }
   function mappingCard([sig, fs]) {
     const f = fs[0], sp = spec();
-    const roles = ["time", "load", "lld", "lld2", "cmod", "ignore"];
+    const roles = ["time", "load", "load2", "lld", "lld2", "cmod", "ignore"];
     const rows = f.cols.map((c) => {
       const kind = unitKind(c.role);
       const unitSel = kind ? `<select data-act="unit" data-i="${c.index}" aria-label="Unit for ${esc(c.name)}">${UNITS[kind].map(([v, l]) => `<option value="${v}" ${c.unit === v ? "selected" : ""}>${l}</option>`).join("")}</select>
@@ -199,6 +199,7 @@
       const note = [];
       if (c.role === "time" && f.time_reset) note.push("Time resets after the contact hold. The part before the last reset is dropped.");
       if (c.role === "lld2") note.push("Averaged with LLD.");
+      if (c.role === "load2") note.push("Averaged with Load.");
       if (/actuator|stroke|position|ram/i.test(c.name) && c.role === "lld") note.push("Machine stroke. Zeroed at the start load.");
       return `<tr><td><strong>${esc(c.name)}</strong>${c.unit_text ? ` <span class="muted small">(${esc(c.unit_text)})</span>` : ""}</td>
         <td>${unitSel}</td><td class="mono small">${c.first.map((v) => fmtSig(v, 5)).join(", ")}</td>
@@ -647,8 +648,7 @@
   function setRole(sig, idx, role) {
     S.files.filter((f) => f.signature === sig).forEach((f) => {
       const c = f.cols.find((x) => x.index === idx);
-      if (role !== "ignore" && role !== "lld2") f.cols.forEach((x) => { if (x.role === role && x.index !== idx) x.role = "ignore"; });
-      if (role === "lld2") f.cols.forEach((x) => { if (x.role === "lld2" && x.index !== idx) x.role = "ignore"; });
+      if (role !== "ignore") f.cols.forEach((x) => { if (x.role === role && x.index !== idx) x.role = "ignore"; });
       c.role = role;
       const k = unitKind(role);
       if (k && !UNITS[k].some(([v]) => v === c.unit)) { c.unit = UNITS[k][0][0]; c.unit_source = "guess"; }
