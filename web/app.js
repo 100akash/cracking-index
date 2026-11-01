@@ -50,15 +50,56 @@
     if (n === 4) return !!S.run;
     return false;
   }
+  function stepState(n) {
+    if (n === 1) return S.test && String(S.temp).trim() !== "" ? "done" : "todo";
+    if (n === 2) {
+      if (!S.files.length) return "todo";
+      const bad = S.files.some((f) => { const c = S.checks[f.id]; return !c || c.error || (c.rate && c.rate.ok === false) || (c.hz && c.hz.ok === false); });
+      return allConfirmed() && !bad ? "done" : "attn";
+    }
+    if (n === 3) {
+      if (!S.files.length) return "todo";
+      if (!S.files.every((f) => dimsReady(f.id))) return "attn";
+      return S.run ? "done" : "todo";
+    }
+    if (n === 4) {
+      if (!S.run) return "todo";
+      const { inc } = included();
+      const ok = inc.filter(Boolean).length >= S.specs[S.run.test].min_reps && S.run.replicates.every((r) => !r.error && !r.warnings.length);
+      return ok ? "done" : "attn";
+    }
+    return "todo";
+  }
+  const STATE_TITLE = { done: "Done", attn: "Needs your attention", todo: "Not started" };
   function renderSteps() {
     stepsNav.innerHTML = STEPS.map((t, i) => {
-      const n = i + 1, cur = S.step === n, done = n < S.step;
+      const n = i + 1, cur = S.step === n, st = stepState(n);
       let sub = "";
-      if (n === 1 && done) sub = `: ${esc(spec().name)}, ${esc(S.temp || "–")} °${S.tempUnit}`;
-      if (n === 2 && done) sub = `: ${S.files.length} file${S.files.length === 1 ? "" : "s"}`;
-      return `<button class="step${done ? " done" : ""}" data-go="${n}" ${cur ? 'aria-current="step"' : ""} ${canGo(n) ? "" : "disabled"}>
-        <span class="n">${done ? "✓" : n}</span><span>${t}${sub}</span></button>`;
+      if (n === 1 && st === "done") sub = `: ${esc(spec().name)}, ${esc(S.temp || "–")} °${S.tempUnit}`;
+      if (n === 2 && S.files.length) sub = `: ${S.files.length} file${S.files.length === 1 ? "" : "s"}`;
+      return `<button class="step" data-go="${n}" ${cur ? 'aria-current="step"' : ""} ${canGo(n) ? "" : "disabled"} title="${STATE_TITLE[st]}">
+        <span class="n ${st}">${n}</span><span>${t}${sub}</span></button>`;
     }).join("");
+  }
+  const mark = (st) => `<i class="si ${st}" title="${STATE_TITLE[st] || ""}" aria-label="${STATE_TITLE[st] || ""}"></i>`;
+  function guide() {
+    let txt = "", btn = "";
+    if (S.step === 1) { txt = `Pick the test you ran and record the temperature. Then continue.`; btn = `<button class="btn primary small" data-go="2">Continue to upload</button>`; }
+    else if (S.step === 2) {
+      const gs = groups(), open = gs.findIndex(([s]) => !S.confirmed[s]);
+      const bad = S.files.filter((f) => { const c = S.checks[f.id]; return c && ((c.rate && c.rate.ok === false) || (c.hz && c.hz.ok === false)); }).length;
+      if (!S.files.length) { txt = "Add one file per replicate, or load the example files to try the tool."; btn = `<button class="btn small" data-act="examples">Load example files</button>`; }
+      else if (open >= 0) { txt = `Check the column mapping for Format ${String.fromCharCode(65 + open)} and confirm it.`; btn = `<button class="btn primary small" data-act="gconfirm" data-sig="${esc(gs[open][0])}">Show mapping</button>`; }
+      else { txt = bad ? `Mapping confirmed. ${bad} file${bad === 1 ? " has" : "s have"} a rate or sampling warning. You can still continue.` : "Mapping confirmed and loading checks pass. Continue to processing."; btn = `<button class="btn primary small" data-go="3">Continue to processing</button>`; }
+    } else if (S.step === 3) {
+      const p = S.files.filter((f) => !dimsReady(f.id)).length;
+      if (p) { txt = `Enter the dimensions or accept the defaults for ${p} specimen${p === 1 ? "" : "s"}.`; btn = `<button class="btn soft small" data-act="acceptall">Accept all defaults</button>`; }
+      else { txt = "Dimensions are in. Check the fit, then run the analysis."; btn = `<button class="btn primary small" data-act="run">Run analysis</button>`; }
+    } else if (S.step === 4) {
+      txt = stepState(4) === "done" ? "All replicates pass their checks. Review the results, then export." : "Review the warnings and the replicates, then export.";
+      btn = `<button class="btn primary small" data-act="export" ${S.busy ? "disabled" : ""}>${S.busy ? '<span class="busy"></span> Building files' : "Export results (.zip)"}</button>`;
+    }
+    return `<div class="guide"><span class="pill">Next</span><span class="gt">${txt}</span>${btn}</div>`;
   }
   function go(n) {
     if (!canGo(n)) return;
@@ -70,7 +111,7 @@
   function render() {
     renderSteps();
     const f = [null, viewTest, viewUpload, viewProcess, viewResults][S.step];
-    app.innerHTML = f() + footer();
+    app.innerHTML = guide() + f() + footer();
     after();
   }
   let afterFns = [];
@@ -207,7 +248,7 @@
     const miss = missingRoles(f);
     const notes = [...f.notes];
     if (!f.cols.some((c) => c.role === "cmod") && !sp.needs.includes("cmod")) notes.push(`No CMOD column found. ${sp.name} does not need one.`);
-    return `<section class="card"><div class="row"><h3>Column mapping · ${fs.length} file${fs.length === 1 ? "" : "s"} with this header</h3><span class="spacer"></span>
+    return `<section class="card"><div class="row"><h3>${mark(S.confirmed[sig] ? "done" : "attn")}Column mapping · ${fs.length} file${fs.length === 1 ? "" : "s"} with this header</h3><span class="spacer"></span>
         ${S.confirmed[sig] ? '<span class="chip ok">✓ Confirmed</span>' : `<button class="btn primary small" data-act="confirm" data-sig="${esc(sig)}" ${miss.length ? "disabled" : ""}>Confirm mapping</button>`}</div>
       <div class="tblwrap"><table class="tbl"><thead><tr><th>Column in file</th><th>Unit</th><th>First values</th><th>Role</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></div>
       ${miss.length ? `<div class="notice">Map a column to: ${miss.map((r) => ROLE_LABEL[r]).join(", ")}.</div>` : ""}
@@ -230,7 +271,7 @@
     const pc = S.checks[S.previewFile];
     afterFns.push(() => {});
     return `<div class="grid2">
-      <section class="card"><h3>Loading checks</h3>
+      <section class="card"><h3>${mark(S.files.every((f) => { const c = S.checks[f.id]; return c && !c.error && c.rate.ok !== false && c.hz.ok !== false; }) ? "done" : "attn")}Loading checks</h3>
         <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate</th><th>${esc(sp.standard_plain || sp.standard.replace(/<[^>]+>/g, ""))} target</th><th>Sampling</th><th>Test segment</th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="small muted">Rate is a line fit of ${sp.control === "cmod" ? "CMOD" : "LLD"} vs. time from 25% of peak (rising) to the ${sp.end_load} kN cut-off${S.test === "dct" ? " (D7313 uses the slope of CMOD vs. time over the whole record)" : ""}. Checks warn only. They never block a run.</p>
       </section>
@@ -256,7 +297,7 @@
     if (st.seating !== d.seating) dev.push("seating energy");
     if (st.tare) dev.push("load tare");
     const fitTests = ["ifit", "idealct", "donut"];
-    const settings = `<section class="card"><h3>Settings</h3>
+    const settings = `<section class="card"><h3>${mark(dev.length ? "attn" : "done")}Settings</h3>
       ${fitTests.includes(S.test) ? `<div class="stack" style="gap:6px"><span class="label">Data mode</span>
         <div class="seg" role="group"><button data-act="mode" data-v="fitted" aria-pressed="${st.mode === "fitted"}">Fitted</button><button data-act="mode" data-v="raw" aria-pressed="${st.mode === "raw"}">Raw</button></div>
         <span class="small muted">${sp.fit_note}</span></div>` : `<div class="stack" style="gap:6px"><span class="label">Data mode</span><span class="small">Raw data. ${sp.fit_note}</span></div>`}
@@ -290,7 +331,7 @@
         (pv.notes.length ? `<p class="small muted">${pv.notes.join(" ")}</p>` : "") +
         `<p class="small muted">Preview uses this replicate's current dimensions${dimsReady(pf.id) ? "" : " (defaults until confirmed)"}.</p>`;
     }
-    const preview = `<section class="card"><div class="row"><h3>Fit preview</h3><span class="spacer"></span>
+    const preview = `<section class="card"><div class="row"><h3>${mark(pv && pv.outputs && !pv.warnings.length ? "done" : pv && (pv.error || (pv.warnings && pv.warnings.length)) ? "attn" : "todo")}Fit preview</h3><span class="spacer"></span>
       <div class="tabs">${S.files.map((f) => `<button data-act="pv" data-id="${f.id}" aria-pressed="${f.id === S.previewFile}">${esc(label(f))}</button>`).join("")}</div></div>${pvHtml}</section>`;
     const b = S.batch;
     const batch = `<section class="card"><h3>Batch details (optional)</h3><p class="small muted">For the record and the report. Not used in calculations.</p>
@@ -385,7 +426,7 @@
       return `<tr><td><input type="text" data-label="${f.id}" value="${esc(label(f))}" style="width:150px" aria-label="Specimen name"><div class="small muted">${esc(f.name)}</div></td>${cells}
         <td class="n"><input type="text" inputmode="decimal" class="num" data-av="${f.id}" value="${esc(row.av.vals[0])}" placeholder="optional"></td><td>${chk}</td></tr>`;
     }).join("");
-    return `<section class="card"><div class="row"><h3>Specimen dimensions</h3><span class="spacer"></span>
+    return `<section class="card"><div class="row"><h3>${mark(S.files.every((f) => dimsReady(f.id)) ? "done" : "attn")}Specimen dimensions</h3><span class="spacer"></span>
         <div class="seg" role="group"><button data-act="dimmode" data-v="avg" aria-pressed="${S.dimMode === "avg"}">Averaged values</button><button data-act="dimmode" data-v="ind" aria-pressed="${S.dimMode === "ind"}">Individual readings</button></div>
         <button class="btn small" data-act="paste">Paste from Excel</button><button class="btn soft small" data-act="acceptall">Accept all defaults</button></div>
       <div class="tblwrap"><table class="tbl"><thead><tr><th>Specimen</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>
@@ -476,15 +517,14 @@
     const idx = olab[sp.index];
     const bars = barSVG(reps.map((r, i) => ({ label: r.label, v: r.outputs ? r.outputs[sp.index] : null, inc: inc[i] })), idx);
     const base = [S.batch.project || "Project", sp.name, S.batch.mix || "Mix"].map((s) => String(s).trim().split(/\s+/).map((w) => w[0].toUpperCase() + w.slice(1)).join("").replace(/[^A-Za-z0-9._-]+/g, "-")).join("_");
-    return `<section class="stack"><div class="row"><h1>Results</h1><span class="spacer"></span>
-        <button class="btn primary" data-act="export" ${S.busy ? "disabled" : ""}>${S.busy ? '<span class="busy"></span> Building files' : "Export results (.zip)"}</button></div>
+    return `<section class="stack"><h1>Results</h1>
       <p class="lead">${esc(sp.name)} · ${std} · ${esc(S.temp)} °${S.tempUnit}${S.batch.project ? " · " + esc(S.batch.project) : ""}${S.batch.mix ? " · " + esc(S.batch.mix) : ""}</p>
       <div class="row">${chips.join("")}</div>
       <p class="small ${allChecks ? "ok" : "warn"}">${reps.length} replicate${reps.length === 1 ? "" : "s"} · ${allChecks ? "all rate and sampling checks pass" : "some checks warn"} · ${reps.length - nInc} excluded</p></section>
       <section class="tiles">${tiles}</section>
       ${nInc < sp.min_reps ? `<div class="notice">Only ${nInc} replicate${nInc === 1 ? " is" : "s are"} included. ${std} asks for at least ${sp.min_reps} specimens per result.</div>` : ""}
       <section class="card"><details class="more"><summary>More outputs (included replicates)</summary><dl class="kv">${more}</dl></details></section>
-      <section class="card"><div class="row"><h3>Replicates</h3><span class="spacer"></span>
+      <section class="card"><div class="row"><h3>${mark(stepState(4))}Replicates</h3><span class="spacer"></span>
         <label class="toggle"><input type="checkbox" data-act="outlier" ${S.outlier ? "checked" : ""}><span>Remove one outlier<small>Drops the ${esc(idx.label.replace(/<[^>]+>/g, ""))} farthest from the mean of the included replicates</small></span></label></div>
         <div class="tblwrap"><table class="tbl"><thead><tr><th>Include</th><th>Specimen</th>${dimKeys.map((d) => `<th class="n">${esc(d.label.split(" ")[0])} (mm)</th>`).join("")}${keys.map((k) => `<th class="n" title="${esc(olab[k].label.replace(/<[^>]+>/g, ""))}">${esc(S.short[k] || k)}</th>`).join("")}<th>Checks</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="small muted">Untick any row to exclude it by hand. Stats update right away, and the reason goes into the report. Warnings never remove a replicate on their own.</p>
@@ -743,6 +783,7 @@
     }
     else if (a === "examples") loadExamples();
     else if (a === "group") { S.active = t.dataset.sig; render(); }
+    else if (a === "gconfirm") { S.active = t.dataset.sig; render(); const m = app.querySelector('[data-act="confirm"]'); if (m) m.closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }); }
     else if (a === "rmfile") {
       e.stopPropagation();
       const id = t.dataset.id;
@@ -817,8 +858,9 @@
       const v = parseFloat(t.value);
       t.classList.toggle("bad", t.value !== "" && !(isFinite(v) && v > 0));
       if (t.value !== "") r.ok = true;
-      const run = app.querySelector('[data-act="run"]');
+      const run = app.querySelector('.run[data-act="run"]');
       if (run && !S.busy) run.disabled = !S.files.every((f) => dimsReady(f.id));
+      renderSteps();
     }
   });
   stepsNav.addEventListener("click", (e) => { const t = e.target.closest("[data-go]"); if (t && !t.disabled) go(+t.dataset.go); });

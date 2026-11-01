@@ -39,9 +39,12 @@ p { margin: 0; }
 .step { display: flex; align-items: center; gap: 10px; padding: 12px 14px 10px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; white-space: nowrap; min-height: 52px; }
 .step:disabled { cursor: default; opacity: .55; }
 .step .n { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--navy-line); display: grid; place-items: center; font-weight: 600; font-size: 14px; }
-.step.done .n { background: var(--navy); border-color: var(--navy); color: #FFF; }
+.step .n.done { background: var(--ok); border-color: var(--ok); color: #FFF; font-size: 0; }
+.step .n.done::after { content: "✓"; font-size: 15px; }
+.step .n.attn { border: 2px solid var(--orange); color: var(--orange-dk); position: relative; }
+.step .n.attn::before { content: ""; position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--orange); }
 .step[aria-current] { border-bottom-color: var(--orange); color: var(--navy); font-weight: 600; }
-.step[aria-current] .n { background: var(--orange); border-color: var(--orange); color: var(--navy); font-weight: 700; }
+.step[aria-current] .n.todo { background: var(--orange); border-color: var(--orange); color: var(--navy); font-weight: 700; }
 
 /* layout */
 main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 48px; display: flex; flex-direction: column; gap: 22px; }
@@ -175,3 +178,13 @@ dialog textarea { width: 100%; min-height: 160px; font-family: var(--mono); font
 .fgrid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 760px) { .fgrid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .oneline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* guidance cues, as in Bailey Design Trials */
+.guide { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--navy-soft); border: 1px solid var(--navy-line); border-radius: 8px; flex-wrap: wrap; }
+.guide .pill { font: 700 11px var(--display); letter-spacing: .06em; text-transform: uppercase; background: var(--navy); color: #FFF; padding: 3px 8px; border-radius: 3px; white-space: nowrap; }
+.guide .gt { flex: 1; min-width: 200px; color: var(--navy-hi); font-weight: 500; }
+.si { display: inline-block; width: 16px; height: 16px; margin-right: 8px; border-radius: 50%; border: 2px solid var(--field); vertical-align: -2px; font-style: normal; position: relative; }
+.si.done { background: var(--ok); border-color: var(--ok); }
+.si.done::after { content: "✓"; color: #FFF; font-size: 10px; font-weight: 800; position: absolute; inset: 0; display: grid; place-items: center; line-height: 1; }
+.si.attn { border-color: var(--orange); }
+.si.attn::after { content: ""; position: absolute; top: -4px; right: -4px; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
