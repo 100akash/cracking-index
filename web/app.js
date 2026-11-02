@@ -115,8 +115,12 @@
     S.step = n; S.seen = Math.max(S.seen || 1, n); render(); window.scrollTo(0, 0);
     if (n === 3) refreshPreview();
   }
-  const footer = () => `<p class="disclaimer">Check results against the standard before use. Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i> (Version 0.1). akashto.com/cracking-index</p>
-    <p class="verline">v0.1 · Made by Akash Bajaj · <a href="https://akashto.com" target="_blank" rel="noopener">akashto.com</a> · <a href="https://github.com/100akash/cracking-index/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changes</a> · <a href="https://akashto.com/#/contact" target="_blank" rel="noopener">Report an issue</a></p>`;
+  const footer = () => `<footer class="about">
+    <p><b>Cracking Test Analyzer.</b> Developed by Akash Bajaj, University of Illinois Urbana-Champaign. <a href="https://github.com/100akash/cracking-index" target="_blank" rel="noopener">Source code and instructions</a>.</p>
+    <p>Cite as: Bajaj, A. (2026). <i>Cracking Test Analyzer</i> (Version 0.1). akashto.com/cracking-index</p>
+    <p class="disclaimer">Check results against the standard before use. This is an independent tool. It is not endorsed by AASHTO, ASTM or any agency.</p>
+  </footer>
+  <p class="verline">v0.1 · Made by Akash Bajaj · <a href="https://akashto.com" target="_blank" rel="noopener">akashto.com</a> · <a href="https://github.com/100akash/cracking-index/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changes</a> · <a href="https://akashto.com/#/contact" target="_blank" rel="noopener">Report an issue</a></p>`;
   function render() {
     renderSteps();
     const f = [null, viewTest, viewUpload, viewProcess, viewResults][S.step];

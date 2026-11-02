@@ -211,3 +211,10 @@ main.refs { max-width: 980px; }
 @media (max-width: 640px) { .ref dl { grid-template-columns: 1fr; gap: 4px; } .ref dd { margin-bottom: 8px; } .toplinks { gap: 12px; } .brand { font-size: 16px; } }
 .verline { margin: 0; font-size: 12.5px; color: var(--muted2); }
 .verline a { color: var(--muted2); }
+
+/* about footer, same as Bailey Design Trials */
+.about { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 13px; color: var(--muted); max-width: 92ch; }
+.about p { margin: 0 0 8px; }
+.about b { color: var(--ink); }
+.about a { color: var(--navy); }
+.about .disclaimer { font-style: italic; color: var(--muted); }

@@ -60,7 +60,11 @@ Then open http://localhost:8765/?local=1. The page then uses the same engine thr
 
 ## Cite
 
-Bajaj, A. (2026). *Cracking Test Analyzer*. https://akashto.com/cracking-index/
+Bajaj, A. (2026). *Cracking Test Analyzer* (Version 0.1). https://akashto.com/cracking-index/
+
+## Credits
+
+Developed by Akash Bajaj, University of Illinois Urbana-Champaign.
 
 ## References
 
