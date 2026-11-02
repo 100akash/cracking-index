@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Overpass:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="web/style.css?v=10">
+<link rel="stylesheet" href="web/style.css?v=11">
 </head>
 <body>
 <header class="topbar">
@@ -51,10 +51,13 @@
     <div class="refhead"><h3>IDEAL-CT</h3><span class="chip navy">LLD-control · 50 mm/min</span></div>
     <dl>
       <dt>Standard</dt><dd>ASTM D8225-19. Determination of Cracking Tolerance Index of Asphalt Mixture Using the Indirect Tensile Cracking Test at Intermediate Temperature.</dd>
-      <dt>Papers</dt>
+      <dt>Paper</dt>
       <dd><ul>
         <li>Zhou, F., Im, S., Sun, L., and Scullion, T. (2017). Development of an IDEAL cracking test for asphalt mix design and QC/QA. <i>Road Materials and Pavement Design</i>, 18(sup4), 405–427. <a href="https://doi.org/10.1080/14680629.2017.1389082" target="_blank" rel="noopener">doi:10.1080/14680629.2017.1389082</a></li>
-        <li>Yin, F., Garita, J., Taylor, A., and West, R. (2018). Refining the indirect tensile (IDT) N<sub>flex</sub> Factor test to evaluate cracking resistance of asphalt mixtures for mix design and quality assurance. <i>Construction and Building Materials</i>, 172, 396–405. <a href="https://doi.org/10.1016/j.conbuildmat.2018.03.251" target="_blank" rel="noopener">doi:10.1016/j.conbuildmat.2018.03.251</a></li>
+      </ul></dd>
+      <dt>Other indices</dt>
+      <dd><ul>
+        <li>N<sub>flex</sub>. Yin, F., Garita, J., Taylor, A., and West, R. (2018). Refining the indirect tensile (IDT) N<sub>flex</sub> Factor test to evaluate cracking resistance of asphalt mixtures for mix design and quality assurance. <i>Construction and Building Materials</i>, 172, 396–405. <a href="https://doi.org/10.1016/j.conbuildmat.2018.03.251" target="_blank" rel="noopener">doi:10.1016/j.conbuildmat.2018.03.251</a></li>
       </ul></dd>
     </dl>
   </article>
@@ -76,9 +79,10 @@
     <div class="refhead"><h3>SCB</h3><span class="chip navy">CMOD-control · 0.0005 mm/s</span></div>
     <dl>
       <dt>Standard</dt><dd>AASHTO T 394-21. Determining the Fracture Energy of Asphalt Mixtures Using the Semicircular Bend Geometry (SCB).</dd>
-      <dt>Paper</dt>
+      <dt>Papers</dt>
       <dd><ul>
         <li>Li, X., and Marasteanu, M.O. (2004). Evaluation of the low temperature fracture resistance of asphalt mixtures using the semi circular bend test. <i>Journal of the Association of Asphalt Paving Technologists</i>, 73, 401–426.</li>
+        <li>Li, X., and Marasteanu, M.O. (2010). Using semi circular bending test to evaluate low temperature fracture resistance for asphalt concrete. <i>Experimental Mechanics</i>, 50(7), 867–876. <a href="https://doi.org/10.1007/s11340-009-9303-0" target="_blank" rel="noopener">doi:10.1007/s11340-009-9303-0</a></li>
       </ul></dd>
     </dl>
   </article>
@@ -115,8 +119,9 @@
     <div class="refhead"><h3>IDT strength</h3><span class="chip navy">LLD-control · 12.5 mm/min</span></div>
     <dl>
       <dt>Standard</dt><dd>AASHTO T 322-07. Determining the Creep Compliance and Strength of Hot Mix Asphalt (HMA) Using the Indirect Tensile Test Device. Strength part only.</dd>
-      <dt>Paper</dt>
+      <dt>Papers</dt>
       <dd><ul>
+        <li>Kennedy, T.W. (1977). Characterization of asphalt pavement materials using the indirect tensile test. <i>Proceedings of the Association of Asphalt Paving Technologists</i>, 46, 132–150.</li>
         <li>Roque, R., and Buttlar, W.G. (1992). The development of a measurement and analysis system to accurately determine asphalt concrete properties using the indirect tensile mode. <i>Journal of the Association of Asphalt Paving Technologists</i>, 61, 304–332.</li>
       </ul></dd>
     </dl>
@@ -131,7 +136,7 @@
   <article class="card ref" id="changes">
     <h3>Changes</h3>
     <dl>
-      <dt>v0.2 · November 2026</dt><dd>Other indices: CRI and BCI for I-FIT, FST for DCT. Shown apart from the standard outputs.</dd>
+      <dt>v0.2 · November 2026</dt><dd>Other indices: CRI and BCI for I-FIT, N<sub>flex</sub> for IDEAL-CT, FST for DCT. Shown apart from the standard outputs.</dd>
       <dt>v0.1 · November 2026</dt><dd>First release. Seven tests, column detection for CSV, TXT and XLSX files, loading checks, fits, outlier option, and Excel and PDF export.</dd>
     </dl>
     <p class="small">Found a problem? <a href="https://github.com/100akash/cracking-index/issues" target="_blank" rel="noopener">Report an issue on GitHub</a>. Issues are public, so do not attach test files you cannot share.</p>
