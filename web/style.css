@@ -193,9 +193,9 @@ ul.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-dire
 
 /* header links and references page */
 .toplinks { margin-left: auto; display: flex; gap: 18px; align-items: center; }
-.toplinks a { white-space: nowrap; color: #FFF; text-decoration: none; font-weight: 600; font-size: 14px; padding: 6px 2px; border-bottom: 2px solid transparent; }
-.toplinks a:hover, .toplinks a[aria-current] { border-bottom-color: var(--orange); }
-.topbar .topnote { margin-left: 18px; }
+.toplinks a:not(.reflink) { white-space: nowrap; color: #FFF; text-decoration: none; font-weight: 600; font-size: 14px; padding: 6px 2px; border-bottom: 2px solid transparent; }
+.toplinks a:not(.reflink):hover { border-bottom-color: var(--orange); }
+.topbar .topnote { margin-left: 12px; }
 .disclaimer a { color: var(--muted2); }
 main.refs { max-width: 980px; }
 .refs nav.row a { color: var(--navy); font-weight: 600; }
@@ -229,3 +229,9 @@ main.refs { max-width: 980px; }
 .sitefoot .links { color: var(--muted2); white-space: nowrap; }
 .sitefoot .links a { color: var(--muted2); }
 body { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* References pill, same as the Runs in your browser badge, in both tools */
+.reflink { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.07); color: #FFF; font: 500 13px var(--sans); letter-spacing: .01em; white-space: nowrap; text-decoration: none; cursor: pointer; transition: border-color .15s, background .15s; }
+.reflink svg { width: 18px; height: 18px; color: var(--navy-soft); }
+.reflink:hover, .reflink[aria-current] { border-color: var(--orange); background: rgba(255,95,5,.14); }
+@media (max-width: 640px) { .reflink { padding: 6px; } .reflink span { display: none; } }
