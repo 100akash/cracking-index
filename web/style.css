@@ -220,11 +220,12 @@ main.refs { max-width: 980px; }
 .about .disclaimer { font-style: italic; color: var(--muted); }
 
 /* site footer, identical in Bailey Design Trials and the Cracking Test Analyzer */
-.sitefoot { margin-top: auto; background: var(--navy-soft); border-top: 3px solid var(--orange); padding: 18px 24px 22px; font-size: 13px; line-height: 1.55; color: var(--muted); }
-.sitefoot p { margin: 0 0 6px; max-width: 110ch; }
+.sitefoot { margin-top: auto; background: var(--navy-soft); border-top: 3px solid var(--orange); padding: 12px 24px 13px; font-size: 12.5px; line-height: 1.5; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.sitefoot p { margin: 0; }
 .sitefoot b { color: var(--ink); }
 .sitefoot a { color: var(--navy); }
-.sitefoot .disclaimer { font-style: italic; }
-.sitefoot .verline { max-width: none; margin: 12px 0 0; padding: 10px 0 0; border-top: 1px solid var(--navy-line); font-size: 12.5px; color: var(--muted2); }
-.sitefoot .verline a { color: var(--muted2); }
+.sitefoot .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 18px; }
+.sitefoot .disclaimer { font-style: italic; font-size: 12.5px; color: var(--muted); }
+.sitefoot .links { color: var(--muted2); white-space: nowrap; }
+.sitefoot .links a { color: var(--muted2); }
 body { min-height: 100vh; display: flex; flex-direction: column; }
