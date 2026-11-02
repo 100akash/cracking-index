@@ -24,6 +24,16 @@
   /* ------------------------------------------------------------ helpers */
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fin = (v) => typeof v === "number" && isFinite(v);
+  // small "?" that shows a short note on hover, tap or keyboard focus
+  const help = (t) => `<span class="hlp" tabindex="0" role="button" aria-label="${esc(t)}" data-tip="${esc(t)}">?</span>`;
+  const HELP = {
+    mode: "Raw uses the recorded points as they are. Fitted draws a smooth curve through the record to find the peak and key points more reliably when the data are noisy. The note below says what the fit is used for in this test.",
+    zero: "Displacement starts at zero where the load first reaches the start load, so seating slack is not counted.",
+    trim: "Data before the load reaches the start value, and after it drops below the end value, are left out. The defaults follow the standard.",
+    poisson: "Fixed uses 0.35 for every specimen. From secant stiffness estimates it for each specimen from its stiffness, using Yin et al. (2018).",
+    role: "Tell the tool what each column holds. It guesses from the header and values. Check that time, load and displacement are right.",
+    rate: "The measured displacement rate compared with the rate the standard requires. Green is within tolerance.",
+  };
   const fmt = (v, dp = 2) => (fin(v) ? (Math.abs(v) >= 1e5 ? v.toExponential(2).replace("e+", "e") : v.toFixed(dp)) : "–");
   const fmtSig = (v, n = 4) => (fin(v) ? Number(v.toPrecision(n)).toString() : "–");
   const stem = (n) => String(n).replace(/\.[^.]+$/, "");
@@ -258,7 +268,7 @@
     if (!f.cols.some((c) => c.role === "cmod") && !sp.needs.includes("cmod")) notes.push(`No CMOD column found. ${sp.name} does not need one.`);
     return `<section class="card"><div class="row"><h3>${mark(S.confirmed[sig] ? "done" : "attn")}Column mapping · ${fs.length} file${fs.length === 1 ? "" : "s"} with this header</h3><span class="spacer"></span>
         ${S.confirmed[sig] ? '<span class="chip ok">✓ Confirmed</span>' : `<button class="btn primary small" data-act="confirm" data-sig="${esc(sig)}" ${miss.length ? "disabled" : ""}>Confirm mapping</button>`}</div>
-      <div class="tblwrap"><table class="tbl"><thead><tr><th>Column in file</th><th>Unit</th><th>First values</th><th>Role</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="tblwrap"><table class="tbl"><thead><tr><th>Column in file</th><th>Unit</th><th>First values</th><th>Role ${help(HELP.role)}</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></div>
       ${miss.length ? `<div class="notice">Map a column to: ${miss.map((r) => ROLE_LABEL[r]).join(", ")}.</div>` : ""}
       ${notes.length ? `<ul class="small muted" style="margin:0;padding-left:18px">${notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
     </section>`;
@@ -280,7 +290,7 @@
     afterFns.push(() => {});
     return `<div class="grid2">
       <section class="card"><h3>${mark(S.files.every((f) => { const c = S.checks[f.id]; return c && !c.error && c.rate.ok !== false && c.hz.ok !== false; }) ? "done" : "attn")}Loading checks</h3>
-        <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate</th><th>Target</th><th>Sampling</th><th>Segment</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate ${help(HELP.rate)}</th><th>Target</th><th>Sampling</th><th>Segment</th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="small muted">Rate is a line fit of ${sp.control === "cmod" ? "CMOD" : "LLD"} vs. time from 25% of peak (rising) to the ${sp.end_load} kN cut-off${S.test === "dct" ? " (D7313 uses the slope of CMOD vs. time over the whole record)" : ""}. Checks warn only. They never block a run.</p>
       </section>
       <section class="card"><div class="row"><h3>Preview</h3><span class="spacer"></span>
@@ -306,16 +316,16 @@
     if (st.tare) dev.push("load tare");
     const fitTests = ["ifit", "idealct", "donut"];
     const settings = `<section class="card"><h3>${mark(dev.length ? "attn" : "done")}Settings</h3>
-      ${fitTests.includes(S.test) ? `<div class="stack" style="gap:6px"><span class="label">Data mode</span>
+      ${fitTests.includes(S.test) ? `<div class="stack" style="gap:6px"><span class="label">Data mode ${help(HELP.mode)}</span>
         <div class="seg" role="group"><button data-act="mode" data-v="fitted" aria-pressed="${st.mode === "fitted"}">Fitted</button><button data-act="mode" data-v="raw" aria-pressed="${st.mode === "raw"}">Raw</button></div>
         <span class="small muted">${sp.fit_note}</span></div>` : `<div class="stack" style="gap:6px"><span class="label">Data mode</span><span class="small">Raw data. ${sp.fit_note}</span></div>`}
-      <div class="stack" style="gap:6px"><span class="label">Displacement zero</span><span class="small">At the start load, for every replicate</span></div>
-      <div class="stack" style="gap:6px"><span class="label">Trim</span>
+      <div class="stack" style="gap:6px"><span class="label">Displacement zero ${help(HELP.zero)}</span><span class="small">At the start load, for every replicate</span></div>
+      <div class="stack" style="gap:6px"><span class="label">Trim ${help(HELP.trim)}</span>
         <div class="row"><label class="f">Start at load (kN)<input type="text" inputmode="decimal" class="num" data-set="start_load" value="${st.start_load}"></label>
         <label class="f">End below load (kN)<input type="text" inputmode="decimal" class="num" data-set="end_load" value="${st.end_load}"></label></div></div>
       ${["ifit", "scb"].includes(S.test) ? `<label class="toggle"><input type="checkbox" data-set="seating" ${st.seating ? "checked" : ""}><span>Add seating energy<small>${esc(sp.seating_note)}</small></span></label>` : ""}
       <label class="toggle"><input type="checkbox" data-set="tare" ${st.tare ? "checked" : ""}><span>Tare load<small>Subtract the first load reading from every load. Lowers G<sub>f</sub> by a few percent. Flagged when on.</small></span></label>
-      ${S.test === "idealct" ? `<div class="stack" style="gap:6px"><span class="label">Poisson's ratio for N<sub>flex</sub></span>
+      ${S.test === "idealct" ? `<div class="stack" style="gap:6px"><span class="label">Poisson's ratio for N<sub>flex</sub> ${help(HELP.poisson)}</span>
         <div class="seg" role="group"><button data-act="poisson" data-v="fixed" aria-pressed="${st.poisson === "fixed"}">Fixed 0.35</button><button data-act="poisson" data-v="sc" aria-pressed="${st.poisson === "sc"}">From secant stiffness</button></div>
         ${st.poisson === "sc" ? `<div class="seg" role="group"><button data-act="mix" data-v="design" aria-pressed="${st.mix === "design"}">N<sub>design</sub> specimens</button><button data-act="mix" data-v="av7" aria-pressed="${st.mix === "av7"}">7% air voids</button></div>` : ""}
         <span class="small muted">Yin et al. (2018). μ = 0.15 + 0.35/(1 + e<sup>a + b·S<sub>c</sub></sup>), S<sub>c</sub> = P<sub>max</sub>/Δ<sub>Pmax</sub>.</span></div>` : ""}
@@ -900,4 +910,25 @@
       app.innerHTML = `<div class="boot"><h1>Cracking Test Analyzer</h1><p class="err">${esc(e.message)}</p><p>Reload the page to try again.</p></div>`;
     }
   })();
+
+  /* ------------------------------------------------------------ help notes */
+  const tipEl = document.createElement("div");
+  tipEl.className = "tip"; tipEl.setAttribute("role", "tooltip");
+  document.body.appendChild(tipEl);
+  let tipFor = null;
+  function showTip(el) {
+    tipFor = el; tipEl.textContent = el.dataset.tip; tipEl.classList.add("on");
+    const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    let x = r.left + r.width / 2 - w / 2; x = Math.max(8, Math.min(x, innerWidth - w - 8));
+    let y = r.bottom + 8; if (y + h > innerHeight - 8) y = r.top - h - 8;
+    tipEl.style.left = x + "px"; tipEl.style.top = y + "px";
+  }
+  function hideTip() { tipFor = null; tipEl.classList.remove("on"); }
+  document.addEventListener("mouseover", (e) => { const h = e.target.closest(".hlp"); if (h) showTip(h); });
+  document.addEventListener("mouseout", (e) => { if (e.target.closest(".hlp") && tipFor && !tipFor.contains(e.relatedTarget) && document.activeElement !== tipFor) hideTip(); });
+  document.addEventListener("focusin", (e) => { const h = e.target.closest(".hlp"); if (h) showTip(h); });
+  document.addEventListener("focusout", (e) => { if (e.target.closest(".hlp")) hideTip(); });
+  document.addEventListener("click", (e) => { const h = e.target.closest(".hlp"); if (h) { e.preventDefault(); showTip(h); } else if (tipFor) hideTip(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && tipFor) hideTip(); });
+  addEventListener("scroll", hideTip, { passive: true });
 })();

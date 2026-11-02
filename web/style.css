@@ -235,3 +235,9 @@ body { min-height: 100vh; display: flex; flex-direction: column; }
 .reflink svg { width: 18px; height: 18px; color: var(--navy-soft); }
 .reflink:hover, .reflink[aria-current] { border-color: var(--orange); background: rgba(255,95,5,.14); }
 @media (max-width: 640px) { .reflink { padding: 6px; } .reflink span { display: none; } }
+
+/* help notes */
+.hlp { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 4px; border-radius: 50%; border: 1.3px solid var(--navy-line); background: #FFF; color: var(--navy); font: 700 10.5px/1 var(--sans); letter-spacing: 0; text-transform: none; vertical-align: 1px; cursor: help; user-select: none; }
+.hlp:hover, .hlp:focus-visible { border-color: var(--orange); color: var(--orange); outline: none; }
+.tip { position: fixed; z-index: 100; max-width: 300px; padding: 9px 12px; border-radius: 6px; background: var(--navy); color: #FFF; font: 400 13px/1.45 var(--sans); letter-spacing: 0; text-transform: none; box-shadow: 0 8px 22px rgba(19,41,75,.22); opacity: 0; pointer-events: none; transition: opacity .12s; }
+.tip.on { opacity: 1; }
