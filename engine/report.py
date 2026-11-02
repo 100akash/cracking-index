@@ -12,7 +12,7 @@ import numpy as np
 import core
 import specs
 
-VERSION = "0.2"
+VERSION = "0.1"
 SHORT = specs.SHORT
 NAVY, ORANGE, GREY = "#13294B", "#FF5F05", "#9A968C"
 PAL = [NAVY, ORANGE, "#7A1F1F", "#1B6B3A", "#5B6F95", "#C84113"]

@@ -78,6 +78,10 @@ This is an independent tool. It is not endorsed by AASHTO, ASTM or any agency.
 
 Fonts: IBM Plex Sans, IBM Plex Mono and Overpass from Google Fonts.
 
+## Versions
+
+The current version is v0.1. See [CHANGELOG.md](CHANGELOG.md). Major updates get a new version.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

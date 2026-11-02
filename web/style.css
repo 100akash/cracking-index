@@ -209,3 +209,5 @@ main.refs { max-width: 980px; }
 .ref ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
 .ref a { word-break: break-word; }
 @media (max-width: 640px) { .ref dl { grid-template-columns: 1fr; gap: 4px; } .ref dd { margin-bottom: 8px; } .toplinks { gap: 12px; } .brand { font-size: 16px; } }
+.verline { margin: 0; font-size: 12.5px; color: var(--muted2); }
+.verline a { color: var(--muted2); }
