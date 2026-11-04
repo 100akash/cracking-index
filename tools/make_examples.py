@@ -39,7 +39,6 @@ sys.path.insert(0, os.path.join(ROOT, "engine"))
 import routes  # noqa: E402
 
 rng = np.random.default_rng(7)
-SRC = "Back-calculated from MN/RC 2007-43"
 
 # mean, CoV, and the order of the three replicates (in SDs from the mean)
 SCB = {"MixA": {"label": "58-34 granite at -24 C", "KIC": (1.0, 0.040, [0, -1, 1]), "Gf": (549.0, 0.110, [1, -1, 0]), "c0": 0.100, "n": 5, "hz": 10},
@@ -59,7 +58,6 @@ def daq(path, cols, names, units, title, note):
     with open(path, "w", newline="") as f:
         f.write(f"Example project,{title}\n")
         f.write(f"Synthetic data,{note}\n")
-        f.write(f"Source,{SRC}\n")
         f.write("Note,Not a real test\n\n\n")
         f.write(",".join(f'"{n}"' for n in names) + "\n")
         f.write(",".join(f'"{u}"' for u in units) + "\n")

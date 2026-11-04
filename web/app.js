@@ -236,7 +236,7 @@
             <strong>Drop CSV, TXT or XLSX files here</strong><span class="small muted">Select several at once.</span>
             <div class="row"><label class="btn navy">Browse files<input type="file" id="fileinput" multiple accept=".csv,.txt,.tsv,.dat,.xlsx,.xlsm" class="hidden"></label>
             <button class="btn" data-act="examples">Load example files</button></div>
-            <span class="small muted">${["scb", "idt"].includes(S.test) ? `Example files are synthetic curves. They are back-calculated to match published means for two mixes in <a href="https://rosap.ntl.bts.gov/view/dot/38925" target="_blank" rel="noopener">MnDOT report 2007-43</a>. Mix A first, then Mix B for a second batch.` : "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch."}</span>
+            <span class="small muted">${["scb", "idt"].includes(S.test) ? "Example files are synthetic curves. Mix A first, then Mix B for a second batch." : "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch."}</span>
           </div>
           ${errs}
           ${gs.length ? `<div class="groups">${gHtml}</div>
