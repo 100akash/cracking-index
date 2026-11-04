@@ -68,8 +68,12 @@ def _record(fid, roles, units, test):
     if t is None:
         t = np.arange(n, dtype=float)
         seg_note = "No time column"
+    P, u, cm, flipped = _fix_signs(P, u, cm, sl)
+    segment = seg_note or "Whole file"
+    if flipped:
+        segment += " · sign flipped: " + ", ".join("load" if x == "Load" else x for x in flipped)
     rec = {"t": t[sl], "P": P[sl], "u": None if u is None else u[sl], "cmod": None if cm is None else cm[sl],
-           "segment": seg_note or "Whole file", "has_time": roles.get("time") not in (None, "", -1)}
+           "segment": segment, "has_time": roles.get("time") not in (None, "", -1), "flipped": flipped}
     missing = [r for r in spec["needs"] if r != "lld2" and (
         (r == "time" and not rec["has_time"]) or (r == "lld" and rec["u"] is None) or (r == "cmod" and rec["cmod"] is None))]
     if test == "dct" and rec["u"] is None:
@@ -78,6 +82,41 @@ def _record(fid, roles, units, test):
         raise ValueError("No LLD column is mapped.")
     rec["missing"] = missing
     return rec
+
+
+def _flip_text(flipped):
+    names = flipped[0] if len(flipped) == 1 else ", ".join(flipped[:-1]) + " and " + flipped[-1]
+    return f"{names} sign flipped" if len(flipped) == 1 else f"{names} signs flipped"
+
+
+def _fix_signs(P, u, cm, sl):
+    """Some frames record tension as negative load, or displacement that grows in the negative direction.
+    Load is flipped when its largest reading is negative. Each displacement channel is flipped when it
+    moves in the negative direction between the start of the test and the load peak. Offsets do not matter."""
+    flipped = []
+    Ps = P[sl]
+    fin = Ps[np.isfinite(Ps)]
+    if fin.size and fin.min() < 0 and -fin.min() > max(fin.max(), 0.0):
+        P = -P
+        flipped.append("Load")
+        Ps = P[sl]
+    if not np.isfinite(Ps).any():
+        return P, u, cm, flipped
+    ip = int(np.nanargmax(Ps))
+
+    def fix(x, name):
+        if x is None:
+            return x
+        xs = x[sl]
+        k = max(1, min(20, len(xs) // 50))
+        d = xs[ip] - np.nanmedian(xs[:k])
+        if np.isfinite(d) and d < 0:
+            flipped.append(name)
+            return -x
+        return x
+    u = fix(u, "LLD")
+    cm = fix(cm, "CMOD")
+    return P, u, cm, flipped
 
 
 def _rate(test, rec, pr, res=None):
@@ -187,6 +226,8 @@ def _analyze(test, f, st):
         fitok = (fitok is not False) and out["r2_pre"] >= 0.997
     checks["fit"] = {"ok": fitok}
     warn = list(res["warnings"])
+    if rec.get("flipped"):
+        res["notes"] = [_flip_text(rec["flipped"]) + ": the file records them as negative."] + list(res.get("notes") or [])
     if rec["missing"]:
         warn.append("Missing column: " + ", ".join(rec["missing"]) + ".")
     if not rec["has_time"] and "time" not in rec["missing"]:

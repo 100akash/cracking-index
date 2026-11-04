@@ -26,7 +26,7 @@ def call(path, body):
 
 
 def parse(test, mix="*"):
-    fs = sorted(glob.glob(os.path.join(ROOT, "examples", f"{test}_{mix}_*.csv")))
+    fs = sorted(glob.glob(os.path.join(ROOT, "examples", f"{test}_{mix}_*.*")))
     assert fs, "run tools/make_examples.py first"
     return call("parse", {"files": [{"name": os.path.basename(f), "b64": base64.b64encode(open(f, "rb").read()).decode()} for f in fs]})["files"]
 
@@ -48,9 +48,12 @@ def test_parse_guesses_roles_and_units():
     a = F[0]
     assert a["time_reset"] and a["meta"]["units_row"]
     assert set(a["roles"]) >= {"time", "load", "lld"}
-    dct = parse("dct")[0]
+    dct = parse("dct", "MixB")[0]  # tab-separated text with a units row and an extra temperature column
+    assert dct["meta"]["delimiter"] == "tab" and dct["meta"]["units_row"]
+    roles = {c["role"] for c in dct["cols"]}
+    assert {"time", "load", "cmod"} <= roles
     load = [c for c in dct["cols"] if c["role"] == "load"][0]
-    assert load["unit"] == "n" and load["unit_source"] == "header"
+    assert load["unit"] == "kn" and load["unit_source"] == "header"
 
 
 def test_all_tests_run_and_pass_checks():
@@ -59,8 +62,8 @@ def test_all_tests_run_and_pass_checks():
         r = call("run", {"test": t, "settings": {}, "files": payload(F)})
         for rep in r["replicates"]:
             assert "error" not in rep, (t, rep.get("error"))
-            if t == "idealct":
-                continue  # lab examples: one set sampled at 30 Hz, one set with no time column (see below)
+            if t in ("idealct", "dct"):
+                continue  # lab examples with known warnings (low sampling, no time column); tested below
             assert rep["checks"]["rate"]["ok"] is True, (t, rep["checks"]["rate"])
             assert rep["checks"]["hz"]["ok"] is True, (t, rep["checks"]["hz"])
             idx = routes.specs.TESTS[t]["index"]
@@ -84,6 +87,22 @@ def test_idealct_examples_and_missing_time():
                 assert not any("Missing column" in w for w in rep["warnings"])
     # DCT: time is optional; raw uses the measured CMOD, fitted uses CMOD vs time
     assert "time" not in routes.specs.TESTS["dct"]["needs"] and "time" in routes.specs.TESTS["dct"]["optional"]
+
+
+def test_dct_examples_and_sign_flip():
+    # Mix A records load and CMOD as negative: the tool flips them. Mix B is sampled at 19 Hz.
+    want = {"MixA": [392.6, 558.0, 508.6], "MixB": [833.6, 573.6, 853.8, 628.5]}
+    for mix, ref in want.items():
+        F = parse("dct", mix)
+        r = call("run", {"test": "dct", "settings": {}, "files": payload(F)})
+        gf = [x["outputs"]["Gf"] for x in r["replicates"]]
+        assert all(abs(a - b) < 1.0 for a, b in zip(gf, ref)), (mix, gf)
+        for rep in r["replicates"]:
+            assert rep["outputs"]["Pmax"] > 2.5
+            if mix == "MixA":
+                assert "sign flipped" in rep["segment"] and rep["checks"]["rate"]["ok"] is True and rep["checks"]["hz"]["ok"] is True
+            else:
+                assert "sign flipped" not in rep["segment"] and rep["checks"]["hz"]["ok"] is False
 
 
 def test_dct_raw_and_fitted_cmod():

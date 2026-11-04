@@ -1,4 +1,4 @@
-"""Make the synthetic example files in examples/ (all tests except I-FIT and IDEAL-CT).
+"""Make the synthetic example files in examples/ (all tests except I-FIT, IDEAL-CT and DCT).
 
 These are made-up curves for a made-up "Mix A". They are not test data.
 Run: python tools/make_examples.py
@@ -141,6 +141,6 @@ if __name__ == "__main__":
     mixA_service()
     mixA_scb()
     mixA_sltscb()
-    mixA_dct()
+    # mixA_dct(): DCT examples are anonymized lab records (Mix A and Mix B), not made here.
     mixA_idt()
     print("written:", sorted(os.listdir(OUT)))
