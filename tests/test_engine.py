@@ -116,6 +116,15 @@ def test_dct_raw_and_fitted_cmod():
     assert raw["settings"]["mode"] == "raw" and fit["settings"]["mode"] == "fitted"
 
 
+def test_donut_examples():
+    want = {"MixA": [5.94, 6.66, 6.18, 6.50], "MixB": [5.25, 6.40, 5.69, 6.14]}
+    for mix, ref in want.items():
+        F = parse("donut", mix)
+        r = call("run", {"test": "donut", "settings": {}, "files": payload(F)})
+        di = [x["outputs"]["DI"] for x in r["replicates"]]
+        assert all(abs(a - b) < 0.02 for a, b in zip(di, ref)), (mix, di)
+
+
 def test_ifit_values_on_example():
     # two anonymized lab sets: Mix A (DAQ export with a units row) and Mix B (processed, no units row)
     want = {"MixA": [9.5, 9.7, 11.2, 10.9], "MixB": [6.3, 6.0, 9.0, 5.0]}

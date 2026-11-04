@@ -52,8 +52,8 @@ Then open http://localhost:8765/?local=1. The page then uses the same engine thr
 |---|---|
 | `index.html`, `web/` | The page. `worker.js` runs the engine in the browser with [Pyodide](https://pyodide.org). |
 | `engine/` | All calculations in Python: file reading (`parse.py`), shared fits (`core.py`), each test (`methods.py`), test definitions (`specs.py`), exports (`report.py`) and routes (`routes.py`). |
-| `examples/` | Example files. I-FIT and IDEAL-CT: two lab sets each (Mix A, Mix B) with names, IDs and dates removed. Other tests: synthetic curves for a made-up Mix A. |
-| `tools/make_examples.py` | Makes the synthetic example files (all tests except I-FIT and IDEAL-CT). |
+| `examples/` | Example files. I-FIT, IDEAL-CT, DONUT and DCT: two lab sets each (Mix A, Mix B) with names, IDs and dates removed. Other tests: synthetic curves for a made-up Mix A. |
+| `tools/make_examples.py` | Makes the synthetic example files (the other tests). |
 | `tests/test_engine.py` | Engine checks: `python -m pytest tests` |
 | `vendor/` | openpyxl wheels for the browser (MIT). |
 | `server.py` | Optional local server. |
