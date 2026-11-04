@@ -18,6 +18,7 @@
     preview: null, previewBusy: false,
     run: null, manual: {}, reasons: {}, outlier: false, curveSel: "all",
     exp: { format: "xlsx", include_excluded: true }, busy: false,
+    no: 1, nextNo: 2, exported: false, batches: [],  // batches: earlier batches kept for comparison this session
   };
   const spec = () => S.specs[S.test];
 
@@ -114,7 +115,7 @@
     } else if (S.step === 3) {
       const p = S.files.filter((f) => !dimsReady(f.id)).length;
       if (p) { txt = `Enter the dimensions or accept the defaults for ${p} specimen${p === 1 ? "" : "s"}.`; btn = `<button class="btn soft small" data-act="acceptall">Accept all defaults</button>`; }
-      else { txt = "Dimensions are in. Check the fit, then run the analysis."; btn = `<button class="btn primary small" data-act="run">Run analysis</button>`; }
+      else { txt = S.batches.length && !String(S.batch.mix).trim() ? "Dimensions are in. Add a Mix ID below so this batch is easy to tell apart, then run." : "Dimensions are in. Check the fit, then run the analysis."; btn = `<button class="btn primary small" data-act="run">Run analysis</button>`; }
     } else if (S.step === 4) {
       const sp4 = S.specs[S.run.test], { inc } = included(), nI = inc.filter(Boolean).length;
       const nW = S.run.replicates.filter((r) => r.error || (r.warnings && r.warnings.length)).length;
@@ -124,6 +125,7 @@
       else if (cv != null && cv > COV_FLAG) txt = `All checks pass, but the ${esc(S.short[sp4.index] || sp4.index)} COV is ${cv.toFixed(1)}%. Look at the curves for an outlier, then export.`;
       else txt = "All replicates pass their checks. Review the results, then export.";
       btn = `<button class="btn primary small" data-act="export" ${S.busy ? "disabled" : ""}>${S.busy ? '<span class="busy"></span> Building files' : "Export results (.zip)"}</button>`;
+      if (S.exported && !S.busy) { txt = "Results exported. To compare mixes, process another batch with the same test."; btn = `<button class="btn primary small" data-act="newbatch">Process another batch</button>`; }
     }
     return `<div class="guide"><span class="pill">Next</span><span class="gt">${txt}</span>${btn}</div>`;
   }
@@ -223,8 +225,10 @@
     }).join("");
     const errs = S.fileErrors && S.fileErrors.length ? `<div class="notice err"><strong>Some files could not be read.</strong><ul>${S.fileErrors.map((e) => `<li>${esc(e.name)}: ${esc(e.error)}</li>`).join("")}</ul></div>` : "";
     const nReview = gs.filter(([s]) => !S.confirmed[s]).reduce((a, [, fs]) => a + fs.length, 0);
+    const prevB = S.batches.length ? S.batches.reduce((a, b) => (b.no > a.no ? b : a)) : null;
+    const batchNote = prevB ? `<p class="batchnote">Batch ${S.no}. ${S.batches.length === 1 ? esc(batchName(prevB)) + " is" : S.batches.length + " earlier batches are"} kept for comparison.${!S.files.length ? ` <button class="linkbtn" data-act="lastbatch">Back to ${esc(batchName(prevB))} results</button>` : ""}</p>` : "";
     return `<section class="stack"><h1>Upload test files</h1>
-      <p class="lead">Add one file per replicate. The tool reads each file's columns, guesses time, load, LLD and CMOD, and asks you to confirm.</p></section>
+      <p class="lead">Add one file per replicate. The tool reads each file's columns, guesses time, load, LLD and CMOD, and asks you to confirm.</p>${batchNote}</section>
       <div class="grid-side">
         <section class="card">
           <div class="drop" id="drop"><svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14" stroke="#13294B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
@@ -462,12 +466,12 @@
   }
 
   /* ------------------------------------------------------------ step 4: results */
-  function included() {
-    const reps = S.run.replicates;
-    const sp = S.specs[S.run.test];
-    const inc = reps.map((r) => !r.error && S.manual[r.id] !== false);
-    const why = reps.map((r) => (r.error ? "could not be processed" : S.manual[r.id] === false ? (S.reasons[r.id] || "excluded by hand") : ""));
-    if (S.outlier) {
+  function included(b = S) {
+    const reps = b.run.replicates;
+    const sp = S.specs[b.run.test];
+    const inc = reps.map((r) => !r.error && b.manual[r.id] !== false);
+    const why = reps.map((r) => (r.error ? "could not be processed" : b.manual[r.id] === false ? (b.reasons[r.id] || "excluded by hand") : ""));
+    if (b.outlier) {
       const idx = reps.map((r, i) => (inc[i] && r.outputs && fin(r.outputs[sp.index]) ? i : -1)).filter((i) => i >= 0);
       if (idx.length >= 2) {
         const vals = idx.map((i) => reps[i].outputs[sp.index]);
@@ -554,7 +558,7 @@
     const bars = barSVG(reps.map((r, i) => ({ label: r.label, v: r.outputs ? r.outputs[sp.index] : null, inc: inc[i] })), idx);
     const base = [S.batch.project || "Project", sp.name, S.batch.mix || "Mix"].map((s) => String(s).trim().split(/\s+/).map((w) => w[0].toUpperCase() + w.slice(1)).join("").replace(/[^A-Za-z0-9._-]+/g, "-")).join("_");
     return `<section class="stack"><h1>Results</h1>
-      <p class="lead">${esc(sp.name)} · ${std} · ${esc(S.temp)} °${S.tempUnit}${S.batch.project ? " · " + esc(S.batch.project) : ""}${S.batch.mix ? " · " + esc(S.batch.mix) : ""}</p>
+      <p class="lead">${S.batches.length ? `Batch ${S.no} · ` : ""}${esc(sp.name)} · ${std} · ${esc(S.temp)} °${S.tempUnit}${S.batch.project ? " · " + esc(S.batch.project) : ""}${S.batch.mix ? " · " + esc(S.batch.mix) : ""}</p>
       <div class="row">${chips.join("")}</div>
       <p class="small ${allChecks ? "ok" : "warn"}">${reps.length} replicate${reps.length === 1 ? "" : "s"} · ${allChecks ? "all rate and sampling checks pass" : "some checks warn"} · ${reps.length - nInc} excluded</p></section>
       <section class="tiles">${tiles}</section>
@@ -574,6 +578,7 @@
           <div class="tabs">${curveIds.map((id) => `<button data-act="curve" data-id="${id}" aria-pressed="${cur === id}">${id === "all" ? "All" : esc(reps.find((r) => r.id === id).label)}</button>`).join("")}</div></div>${curve}</section>
         <section class="card"><h3>${idx.label} by replicate</h3>${bars}<p class="small muted">Line: mean of the included set. Grey: excluded.</p></section>
       </div>
+      ${compareCard()}
       <section class="card"><h3>Export</h3>
         <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
           <li><strong>${S.exp.format === "csv" ? "CSV" : "XLSX"} × ${reps.length}</strong> <span class="mono">${esc(base)}_${esc(String(reps[0].label).replace(/\s*·\s*/g, "-").replace(/\s+/g, ""))}.${S.exp.format}</span>, one per replicate. ${S.exp.format === "csv" ? "Processed data only." : "Summary sheet (inputs, settings, outputs, checks) with a chart · Data sheet (time, zeroed and trimmed, fitted) · Fit sheet."}</li>
@@ -585,7 +590,118 @@
           <button class="btn primary" data-act="export" ${S.busy ? "disabled" : ""}>Download ${esc(base)}.zip</button></div>
         <p class="small muted">The first export loads the Excel and PDF libraries. It can take a few seconds.</p>
       </section>
-      <div class="foot"><button class="btn" data-go="3">Back to processing</button></div>`;
+      <div class="foot"><button class="btn" data-go="3">Back to processing</button><span class="spacer"></span>
+        <button class="btn navy" data-act="newbatch">Process another batch</button></div>`;
+  }
+
+  /* ------------------------------------------------------------ batches and comparison */
+  // Everything that belongs to one batch. Test choice, settings and project carry over to the next batch.
+  const BATCH_KEYS = ["no", "domain", "test", "temp", "tempUnit", "settings", "dimMode", "files", "active", "confirmed", "checks", "previewFile",
+    "dims", "labels", "batch", "run", "manual", "reasons", "outlier", "curveSel", "exp", "seen", "exported"];
+  function snapBatch() { const o = {}; BATCH_KEYS.forEach((k) => (o[k] = S[k])); return o; }
+  function loadBatch(o) { BATCH_KEYS.forEach((k) => (S[k] = o[k])); S.preview = null; S.fileErrors = []; }
+  const batchName = (b) => String(b.batch.mix || "").trim() || `Batch ${b.no}`;
+  function newBatch() {
+    if (!S.run) return;
+    const prev = snapBatch();
+    S.batches.push(prev);
+    S.no = S.nextNo++;
+    S.files = []; S.active = null; S.confirmed = {}; S.checks = {}; S.previewFile = null; S.dims = {}; S.labels = {};
+    S.run = null; S.manual = {}; S.reasons = {}; S.outlier = false; S.curveSel = "all"; S.preview = null; S.fileErrors = []; S.exported = false;
+    S.settings = { ...S.settings }; S.exp = { ...S.exp };
+    S.batch = { ...S.batch, mix: "", vma: "", nmas: "", binder: "", pg: "" };
+    S.step = 2; S.seen = 2; render(); window.scrollTo(0, 0);
+    toast(`${batchName(prev)} is kept for comparison. Add the files for the next batch.`, false, { label: "Undo", fn: backToLast });
+  }
+  function backToLast() {
+    if (!S.batches.length || S.files.length) return;
+    const last = S.batches.reduce((a, b) => (b.no > a.no ? b : a));
+    S.batches = S.batches.filter((b) => b !== last);
+    S.nextNo = Math.max(S.nextNo - 1, last.no + 1);
+    loadBatch(last); S.step = 4; render(); window.scrollTo(0, 0);
+  }
+  function openBatch(i) {
+    const target = S.batches[i];
+    if (!target) return;
+    S.batches[i] = snapBatch();
+    loadBatch(target); S.step = 4; render(); window.scrollTo(0, 0);
+  }
+  function removeBatch(i) {
+    const gone = S.batches.splice(i, 1)[0];
+    if (!gone) return;
+    render();
+    const t = setTimeout(() => API("forget", { ids: gone.files.map((f) => f.id), runs: gone.run ? [gone.run.run] : [] }).catch(() => {}), 9500);
+    toast(`Removed ${batchName(gone)} from this session`, false, { label: "Undo", fn: () => { clearTimeout(t); S.batches.splice(i, 0, gone); render(); } });
+  }
+  function batchStats(b, key) {
+    const { inc } = included(b);
+    return stats(b.run.replicates.map((r, i) => (inc[i] && r.outputs ? r.outputs[key] : null)));
+  }
+  function compareCard() {
+    const sp = S.specs[S.run.test];
+    const cur = { ...snapBatch(), current: true };
+    const all = [...S.batches.map((b, i) => ({ ...b, idx: i })), cur].sort((a, b) => a.no - b.no);
+    const same = all.filter((b) => b.run && b.run.test === S.run.test);
+    const other = all.filter((b) => !b.current && !(b.run && b.run.test === S.run.test));
+    if (same.length < 2 && !other.length) return "";
+    const otherLine = other.length ? `<p class="small muted">Other batches this session: ${other.map((b) => `${esc(b.run ? S.specs[b.run.test].name : "Not run")} · ${esc(batchName(b))} ${b.run ? `<button class="linkbtn" data-act="openbatch" data-i="${b.idx}">Open</button>` : ""}`).join(" &nbsp;·&nbsp; ")}</p>` : "";
+    if (same.length < 2) return `<section class="card compare"><h3>Compare batches</h3><p class="small muted">Process another ${esc(sp.name)} batch to compare mixes here.</p>${otherLine}</section>`;
+    const outs = sp.outputs.filter((o) => o.main);
+    const idx = sp.outputs.find((o) => o.key === sp.index);
+    const rows = same.map((b) => {
+      const { inc } = included(b);
+      const nI = inc.filter(Boolean).length, nAll = b.run.replicates.length;
+      const cells = outs.map((o) => { const st = batchStats(b, o.key); return `<td class="n">${fmtOut(o, st.mean)}<span class="cov">${st.cov == null ? "" : "COV " + st.cov.toFixed(1) + "%"}</span></td>`; }).join("");
+      const act = b.current ? '<span class="chip navy">Showing</span>'
+        : `<button class="linkbtn" data-act="openbatch" data-i="${b.idx}">Open</button> <button class="x" type="button" data-act="rmbatch" data-i="${b.idx}" title="Remove this batch" aria-label="Remove ${esc(batchName(b))}">✕</button>`;
+      return `<tr class="${b.current ? "cur" : ""}"><td><strong>${esc(batchName(b))}</strong><div class="small muted">Batch ${b.no}${b.batch.project ? " · " + esc(b.batch.project) : ""}</div></td>
+        <td class="n">${esc(b.temp)} °${b.tempUnit}</td><td class="n">${nI}${nI < nAll ? ` of ${nAll}` : ""}</td>${cells}<td class="act">${act}</td></tr>`;
+    }).join("");
+    const diff = [];
+    if (new Set(same.map((b) => `${b.temp}${b.tempUnit}`)).size > 1) diff.push("test temperature");
+    if (new Set(same.map((b) => b.run.settings.mode)).size > 1) diff.push("data mode (raw or fitted)");
+    const chart = compareSVG(same.map((b) => {
+      const { inc } = included(b);
+      return { label: batchName(b), cur: !!b.current, st: batchStats(b, sp.index), pts: b.run.replicates.map((r, i) => ({ v: r.outputs ? r.outputs[sp.index] : null, inc: inc[i] })) };
+    }), idx);
+    return `<section class="card compare"><h3>Compare batches</h3>
+      <p class="small muted">${same.length} ${esc(sp.name)} batches from this session. Means of the included replicates.</p>
+      ${diff.length ? `<div class="notice">These batches differ in ${diff.join(" and ")}. Keep that in mind when you compare them.</div>` : ""}
+      <div class="grid-side narrow cmpgrid">
+        <div class="tblwrap"><table class="tbl cmp"><thead><tr><th>Batch</th><th class="n">Temp</th><th class="n">n</th>${outs.map((o) => `<th class="n">${esc(S.short[o.key] || o.key)}</th>`).join("")}<th></th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div>${chart}<p class="small muted">Bars: mean ${esc(idx.label.replace(/<[^>]+>/g, ""))}. Whiskers: ± 1 SD. Dots: replicates. Hollow dots were excluded.</p></div>
+      </div>${otherLine}</section>`;
+  }
+  function compareSVG(items, o) {
+    const W = 420, H = 250, L = 44, B = 46, T = 14, R = 8;
+    let max = 0;
+    items.forEach((it) => { if (fin(it.st.mean)) max = Math.max(max, it.st.mean + (it.st.sd || 0)); it.pts.forEach((p) => { if (fin(p.v)) max = Math.max(max, p.v); }); });
+    const yt = niceTicks(max * 1.08), Y1 = yt[yt.length - 1];
+    const sy = (y) => T + (1 - y / Y1) * (H - T - B);
+    const bw = (W - L - R) / Math.max(1, items.length);
+    let g = "";
+    yt.forEach((v) => (g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${L - 6}" y="${sy(v) + 4}" text-anchor="end">${+v.toFixed(3)}</text>`));
+    items.forEach((it, k) => {
+      const cx = L + k * bw + bw / 2, w = Math.min(bw * 0.56, 70), m = it.st.mean;
+      if (fin(m)) {
+        g += `<rect x="${cx - w / 2}" y="${sy(m)}" width="${w}" height="${H - B - sy(m)}" fill="${it.cur ? "#FF5F05" : "#F7B48C"}"/>`;
+        if (it.st.sd != null) {
+          const a = sy(m + it.st.sd), b2 = sy(Math.max(0, m - it.st.sd));
+          g += `<path d="M${cx} ${a}V${b2}M${cx - 7} ${a}h14M${cx - 7} ${b2}h14" stroke="#13294B" stroke-width="1.6" fill="none"/>`;
+        }
+        g += `<text x="${cx + w / 2 + 4}" y="${sy(m) + 4}" style="fill:#1C1C1A;font-weight:600">${fmtOut(o, m)}</text>`;
+      }
+      const n = it.pts.length;
+      it.pts.forEach((p, j) => {
+        if (!fin(p.v)) return;
+        const x = cx + (n > 1 ? (j / (n - 1) - 0.5) * w * 0.6 : 0);
+        g += `<circle cx="${x.toFixed(1)}" cy="${sy(p.v).toFixed(1)}" r="3.6" fill="${p.inc ? "#13294B" : "#FFF"}" stroke="${p.inc ? "#13294B" : "#9A968C"}" stroke-width="1.4"/>`;
+      });
+      const lab = String(it.label);
+      g += `<text x="${cx}" y="${H - B + 16}" text-anchor="middle" style="${it.cur ? "font-weight:700;fill:#13294B" : ""}">${esc(lab.length > 14 ? lab.slice(0, 13) + "…" : lab)}</text>`;
+    });
+    g += `<line class="ax" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`;
+    return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Mean by batch">${g}</svg>`;
   }
 
   /* ------------------------------------------------------------ plots */
@@ -669,7 +785,7 @@
   /* ------------------------------------------------------------ actions */
   // Files and results live only in this tab. Ask before a refresh, Back or close throws them away.
   window.addEventListener("beforeunload", (e) => {
-    if (!S.files.length && !S.run) return;
+    if (!S.files.length && !S.run && !S.batches.length) return;
     e.preventDefault(); e.returnValue = "";
   });
   async function addFiles(list) {
@@ -785,8 +901,8 @@
   async function doRun() {
     S.busy = true; render();
     try {
-      const r = await API("run", { test: S.test, settings: S.settings, files: S.files.map(filePayload) });
-      S.run = r; S.manual = {}; S.reasons = {}; S.outlier = false; S.curveSel = "all";
+      const r = await API("run", { test: S.test, settings: S.settings, files: S.files.map(filePayload), drop: S.run ? [S.run.run] : [] });
+      S.run = r; S.manual = {}; S.reasons = {}; S.outlier = false; S.curveSel = "all"; S.exported = false;
       S.busy = false; S.step = 4; S.seen = 4; render(); window.scrollTo(0, 0);
     } catch (e) { S.busy = false; render(); toast(e.message, true); }
   }
@@ -803,7 +919,7 @@
       const url = URL.createObjectURL(new Blob([u8], { type: "application/zip" }));
       const a = document.createElement("a"); a.href = url; a.download = r.name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast("Saved " + r.name);
+      toast("Saved " + r.name); S.exported = true;
     } catch (e) { toast(e.message, true); }
     S.busy = false; render();
   }
@@ -857,6 +973,10 @@
     else if (a === "gconfirm") { S.active = t.dataset.sig; render(); const m = app.querySelector('[data-act="confirm"]'); if (m) m.closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }); }
     else if (a === "rmfile") { e.stopPropagation(); removeFiles([t.dataset.id]); }
     else if (a === "rmall") removeFiles(S.files.map((f) => f.id));
+    else if (a === "newbatch") newBatch();
+    else if (a === "lastbatch") backToLast();
+    else if (a === "openbatch") openBatch(+t.dataset.i);
+    else if (a === "rmbatch") removeBatch(+t.dataset.i);
     else if (a === "confirm") { S.confirmed[t.dataset.sig] = true; render(); }
     else if (a === "pfile") { S.previewFile = t.dataset.id; render(); }
     else if (a === "mode") { S.settings.mode = t.dataset.v; render(); refreshPreview(); }

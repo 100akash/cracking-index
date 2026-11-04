@@ -230,6 +230,8 @@ def r_parse(body):
 def r_forget(body):
     for fid in body.get("ids", []):
         FILES.pop(fid, None)
+    for rid in body.get("runs", []):
+        RUNS.pop(rid, None)
     return {"ok": True}
 
 
@@ -289,7 +291,9 @@ def r_run(body):
         except Exception as e:
             reps.append({"id": f["id"], "label": label, "file": FILES.get(f["id"], {}).get("name"), "error": str(e)})
     rid = _id("run")
-    RUNS.clear()
+    # keep earlier batches' runs so they can still be exported; drop the run this one replaces
+    for old in body.get("drop", []):
+        RUNS.pop(old, None)
     RUNS[rid] = {"test": test, "settings": st, "reps": stored}
     return {"run": rid, "test": test, "settings": st, "replicates": reps}
 
