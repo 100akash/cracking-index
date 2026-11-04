@@ -140,7 +140,7 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     mixA_service()
     mixA_scb()
-    mixA_sltscb()
+    # mixA_sltscb(): SLT-SCB examples are anonymized lab records (Mix A and Mix B), not made here.
     # mixA_dct(): DCT examples are anonymized lab records (Mix A and Mix B), not made here.
     mixA_idt()
     print("written:", sorted(os.listdir(OUT)))

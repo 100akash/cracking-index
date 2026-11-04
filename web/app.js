@@ -236,7 +236,7 @@
             <strong>Drop CSV, TXT or XLSX files here</strong><span class="small muted">Select several at once.</span>
             <div class="row"><label class="btn navy">Browse files<input type="file" id="fileinput" multiple accept=".csv,.txt,.tsv,.dat,.xlsx,.xlsm" class="hidden"></label>
             <button class="btn" data-act="examples">Load example files</button></div>
-            <span class="small muted">${["ifit", "idealct", "donut", "dct"].includes(S.test) ? "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch." : "Example files are synthetic curves for a made-up Mix A."}</span>
+            <span class="small muted">${["ifit", "idealct", "donut", "sltscb", "dct"].includes(S.test) ? "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch." : "Example files are synthetic curves for a made-up Mix A."}</span>
           </div>
           ${errs}
           ${gs.length ? `<div class="groups">${gHtml}</div>
@@ -842,8 +842,8 @@
       fr.readAsDataURL(file);
     });
   }
-  // I-FIT has two anonymized lab sets, so a second batch can be compared with the first. Other tests: one synthetic set.
-  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], idealct: [["Mix A", 4], ["Mix B", 4]], donut: [["Mix A", 4], ["Mix B", 4]], dct: [["Mix A", 3], ["Mix B", 4, "txt"]], default: [["Mix A", 3]] };
+  // Lab tests have two anonymized sets, so a second batch can be compared with the first. Other tests: one synthetic set.
+  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], idealct: [["Mix A", 4], ["Mix B", 4]], donut: [["Mix A", 4], ["Mix B", 4]], sltscb: [["Mix A", 4], ["Mix B", 4]], dct: [["Mix A", 3], ["Mix B", 4, "txt"]], default: [["Mix A", 3]] };
   async function loadExamples() {
     const sets = EXAMPLES[S.test] || EXAMPLES.default;
     const used = S.batches.filter((b) => b.example && b.example.test === S.test).length;

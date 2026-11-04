@@ -125,6 +125,16 @@ def test_donut_examples():
         assert all(abs(a - b) < 0.02 for a, b in zip(di, ref)), (mix, di)
 
 
+def test_sltscb_examples():
+    want = {"MixA": [31.7, 63.0, 41.8, 58.4], "MixB": [21.7, 22.8, 20.7, 20.7]}
+    for mix, ref in want.items():
+        F = parse("sltscb", mix)
+        assert all(f["roles"].get("lld") is not None and f["roles"].get("cmod") is not None for f in F), mix
+        r = call("run", {"test": "sltscb", "settings": {}, "files": payload(F)})
+        lci = [x["outputs"]["LCI"] for x in r["replicates"]]
+        assert all(abs(a - b) < 0.1 for a, b in zip(lci, ref)), (mix, lci)
+
+
 def test_ifit_values_on_example():
     # two anonymized lab sets: Mix A (DAQ export with a units row) and Mix B (processed, no units row)
     want = {"MixA": [9.5, 9.7, 11.2, 10.9], "MixB": [6.3, 6.0, 9.0, 5.0]}
