@@ -82,8 +82,19 @@ def test_idealct_examples_and_missing_time():
                 assert rep["checks"]["rate"]["ok"] is None and rep["checks"]["hz"]["ok"] is None
                 assert any("No time column" in w for w in rep["warnings"])
                 assert not any("Missing column" in w for w in rep["warnings"])
-    # DCT still needs time: D7313 fits CMOD against time
-    assert "time" in routes.specs.TESTS["dct"]["needs"]
+    # DCT: time is optional; raw uses the measured CMOD, fitted uses CMOD vs time
+    assert "time" not in routes.specs.TESTS["dct"]["needs"] and "time" in routes.specs.TESTS["dct"]["optional"]
+
+
+def test_dct_raw_and_fitted_cmod():
+    F = parse("dct")
+    raw = call("run", {"test": "dct", "settings": {}, "files": payload(F)})
+    fit = call("run", {"test": "dct", "settings": {"mode": "fitted"}, "files": payload(F)})
+    for a, b in zip(raw["replicates"], fit["replicates"]):
+        ga, gb = a["outputs"]["Gf"], b["outputs"]["Gf"]
+        assert math.isfinite(ga) and math.isfinite(gb) and ga != gb
+        assert abs(ga - gb) / gb < 0.1  # constant CMOD rate: the fit stays close to the measured CMOD
+    assert raw["settings"]["mode"] == "raw" and fit["settings"]["mode"] == "fitted"
 
 
 def test_ifit_values_on_example():

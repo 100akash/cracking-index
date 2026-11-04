@@ -328,7 +328,7 @@
     if (+st.start_load !== d.start_load || +st.end_load !== d.end_load) dev.push("trim");
     if (st.seating !== d.seating) dev.push("seating energy");
     if (st.tare) dev.push("load tare");
-    const fitTests = ["ifit", "idealct", "donut"];
+    const fitTests = ["ifit", "idealct", "donut", "dct"];
     const settings = `<section class="card"><h3>${mark(dev.length ? "attn" : "done")}Settings</h3>
       ${fitTests.includes(S.test) ? `<div class="stack" style="gap:6px"><span class="label">Data mode ${help(HELP.mode)}</span>
         <div class="seg" role="group"><button data-act="mode" data-v="fitted" aria-pressed="${st.mode === "fitted"}">Fitted</button><button data-act="mode" data-v="raw" aria-pressed="${st.mode === "raw"}">Raw</button></div>

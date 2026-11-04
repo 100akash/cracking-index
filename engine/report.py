@@ -535,8 +535,9 @@ def _method_text(test, st):
                 "a window of 15% of the pre-peak points, best R²_raw − 0.05 l_m², l_m = P_avg/P_max − 0.5."],
         "sltscb": ["G_f-pre = trapezoid area to the peak / ((r − a) t). Loading stiffness S: a window of 15% of the pre-peak points is moved along the ascending branch; "
                    "the window with the highest R²_penalized = R²_raw − 0.05 l_m² is used, with l_m = P_avg/P_max − 0.5. LCI = G_f-pre / S."],
-        "dct": ["CMOD vs. time is fitted with a least-squares line over the record (D7313 8.1). CMOD_fit = slope × time. "
-                "The area under load vs. CMOD_fit to 100 N uses the quadrangle rule. Gf = area / (B (W − a)). The CMOD rate check uses the fitted slope.",
+        "dct": ["Gf = area under load vs. CMOD to 100 N / (B (W − a)), by the quadrangle rule. Raw mode (the default) uses the measured CMOD. "
+                "Fitted mode replaces CMOD with a least-squares line of CMOD vs. time over the record (D7313 8.1), CMOD_fit = slope × time, and needs a time column. "
+                "The CMOD rate check uses the slope of that line.",
                 "Other index, not part of D7313: FST = Gf / Sf (Zhu et al. 2017), with fracture strength Sf = 2 Pmax (3W − a) / (B a²), a the ligament length and W the distance from the load line to the back edge (Apeagyei et al. 2006). FST is reported in 10^-6 m."],
         "idt": ["S_t = 2 P_f / (π b D), with P_f the peak load (T 322, 12.3). Creep compliance is not computed."],
     }[test]

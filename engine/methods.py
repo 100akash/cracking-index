@@ -402,12 +402,19 @@ def dct(rec, dims, st):
     B, lig = dims["B"], dims["lig"]
     warn, notes = [], []
     out = _common_out(pr)
-    # D7313 8.1: line fit of CMOD vs time over the test, CMOD_fit = a1 * t
-    a1, a0, rr = linfit(t, cm)
-    cmfit = a1 * t
-    area = trapz(P, cmfit)
+    # Raw (default): area under load vs. the measured CMOD.
+    # Fitted: CMOD replaced by a line fit of CMOD vs time over the test (D7313 8.1), CMOD_fit = a1 * t. Needs time.
+    has_time = rec.get("has_time", True)
+    nan = float("nan")
+    a1, a0, rr = linfit(t, cm) if has_time else (nan, nan, nan)
+    cmfit = a1 * t if has_time else None
+    fitted = st["mode"] == "fitted" and cmfit is not None
+    if st["mode"] == "fitted" and cmfit is None:
+        warn.append("Fitted CMOD needs a time column. The measured CMOD was used.")
+    x = cmfit if fitted else cm
+    area = trapz(P, x)
     Gf = area / (B * lig) * 1e6
-    out.update({"Gf": Gf, "area": area, "cmod_end": float(cmfit[-1]), "cmod_r2": rr, "cmod_slope": a1,
+    out.update({"Gf": Gf, "area": area, "cmod_end": float(x[-1]), "cmod_r2": rr, "cmod_slope": a1,
                 "cmod_icpt": a0})
     # other index: FST = Gf/Sf (Zhu et al. 2017), Sf after Apeagyei et al. (2006)
     W = dims.get("L") or 110.0
@@ -416,11 +423,16 @@ def dct(rec, dims, st):
     out["FST"] = Gf / Sf * 1e6 if Sf > 0 else float("nan")
     out.pop("u_peak", None)
     plot = {"x": "CMOD (mm)", "y": "Load (kN)",
-            "series": [{"name": "Load vs. CMOD (raw)", "cls": "raw", "pts": _pts(cm, P)},
-                       {"name": "Load vs. CMOD<sub>fit</sub>", "cls": "fit", "pts": _pts(cmfit, P)}],
-            "points": [{"name": "Peak", "x": float(cmfit[ip]), "y": out["Pmax"]}], "lines": []}
-    fit_info = {"cmod_fit": {"slope_mm_per_s": a1, "intercept_mm": a0, "r2": rr, "used": "CMOD_fit = a1 × t"}}
-    cols = {"Time (s)": t, "CMOD zeroed (mm)": cm, "CMOD fitted (mm)": cmfit, "Load (kN)": P}
+            "series": [{"name": "Load vs. CMOD (raw)", "cls": "raw", "pts": _pts(cm, P)}]
+                      + ([{"name": "Load vs. CMOD<sub>fit</sub>", "cls": "fit", "pts": _pts(cmfit, P)}] if fitted else []),
+            "points": [{"name": "Peak", "x": float(x[ip]), "y": out["Pmax"]}], "lines": []}
+    fit_info = {"cmod_fit": {"slope_mm_per_s": a1, "intercept_mm": a0, "r2": rr,
+                             "used": "CMOD_fit = a1 × t" if fitted else "Measured CMOD (fit shown for the rate check only)"}}
+    cols = {"Time (s)": t, "CMOD zeroed (mm)": cm, "Load (kN)": P}
+    if fitted:
+        cols = {"Time (s)": t, "CMOD zeroed (mm)": cm, "CMOD fitted (mm)": cmfit, "Load (kN)": P}
+    if not has_time:
+        cols.pop("Time (s)")
     return dict(outputs=out, warnings=warn, notes=notes, plot=plot, fit=fit_info, cols=cols, pr=pr, rate_mm_s=a1)
 
 

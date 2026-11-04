@@ -17,7 +17,7 @@ It runs entirely in your browser. Your files are read in the page and never uplo
 | Service temperature | DONUT | *Draft* ASTM | DONUT index, G<sub>f</sub>, \|S<sub>75</sub>\| |
 | Low temperature | SCB | AASHTO T 394-21 | G<sub>f</sub> with power-law tail, K<sub>IC</sub>, stiffness |
 | Low temperature | SLT-SCB | *Draft* ASTM | LCI, pre-peak G<sub>f</sub>, loading stiffness |
-| Low temperature | DCT | ASTM D7313-20 | G<sub>f</sub> from load vs. fitted CMOD |
+| Low temperature | DCT | ASTM D7313-20 | G<sub>f</sub> from load vs. measured CMOD (fitted CMOD optional) |
 | Low temperature | IDT strength | AASHTO T 322-07 | Tensile strength. Creep compliance is not supported. |
 
 N<sub>flex</sub> follows Yin et al. (2018). The two draft methods may change before they are published.
