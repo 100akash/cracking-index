@@ -236,7 +236,7 @@
             <strong>Drop CSV, TXT or XLSX files here</strong><span class="small muted">Select several at once.</span>
             <div class="row"><label class="btn navy">Browse files<input type="file" id="fileinput" multiple accept=".csv,.txt,.tsv,.dat,.xlsx,.xlsm" class="hidden"></label>
             <button class="btn" data-act="examples">Load example files</button></div>
-            <span class="small muted">${["ifit", "idealct", "donut", "sltscb", "dct"].includes(S.test) ? "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch." : "Example files are synthetic curves for a made-up Mix A."}</span>
+            <span class="small muted">${["scb", "idt"].includes(S.test) ? `Example files are synthetic curves. They are back-calculated to match published means for two mixes in <a href="https://rosap.ntl.bts.gov/view/dot/38925" target="_blank" rel="noopener">MnDOT report 2007-43</a>. Mix A first, then Mix B for a second batch.` : "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch."}</span>
           </div>
           ${errs}
           ${gs.length ? `<div class="groups">${gHtml}</div>
@@ -842,12 +842,12 @@
       fr.readAsDataURL(file);
     });
   }
-  // Lab tests have two anonymized sets, so a second batch can be compared with the first. Other tests: one synthetic set.
-  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], idealct: [["Mix A", 4], ["Mix B", 4]], donut: [["Mix A", 4], ["Mix B", 4]], sltscb: [["Mix A", 4], ["Mix B", 4]], dct: [["Mix A", 3], ["Mix B", 4, "txt"]], default: [["Mix A", 3]] };
+  // Two sets per test, so a second batch can be compared with the first. SCB and IDT sets are synthetic (tools/make_examples.py).
+  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], idealct: [["Mix A", 4], ["Mix B", 4]], donut: [["Mix A", 4], ["Mix B", 4]], sltscb: [["Mix A", 4], ["Mix B", 4]], dct: [["Mix A", 3], ["Mix B", 4, "txt"]], scb: [["Mix A", 3, "csv", -24], ["Mix B", 3, "csv", -24]], idt: [["Mix A", 3, "csv", -24], ["Mix B", 3, "csv", -24]] };
   async function loadExamples() {
-    const sets = EXAMPLES[S.test] || EXAMPLES.default;
+    const sets = EXAMPLES[S.test];
     const used = S.batches.filter((b) => b.example && b.example.test === S.test).length;
-    const [mix, n, ext = "csv"] = sets[used % sets.length];
+    const [mix, n, ext = "csv", tempC] = sets[used % sets.length];
     const tag = mix.replace(/\s+/g, "");
     const names = Array.from({ length: n }, (_, i) => `${S.test}_${tag}_R${i + 1}.${ext}`);
     try {
@@ -862,6 +862,7 @@
       S.files.forEach((f, i) => (S.labels[f.id] = `${mix} · R${i + 1}`));
       if (!S.batch.project) S.batch.project = "Example project";
       if (!S.batch.mix || /^Mix [A-Z]$/.test(S.batch.mix)) S.batch.mix = mix;
+      if (tempC != null) S.temp = (S.tempUnit === "F" ? tempC * 9 / 5 + 32 : tempC).toFixed(1); // the published test temperature
       S.example = { test: S.test, mix };
       render();
     } catch (e) { toast(e.message, true); }

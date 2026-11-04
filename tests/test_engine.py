@@ -1,4 +1,4 @@
-"""Engine checks on the synthetic example files. Run: python -m pytest tests"""
+"""Engine checks on the example files. Run: python -m pytest tests"""
 import base64
 import glob
 import io
@@ -27,7 +27,7 @@ def call(path, body):
 
 def parse(test, mix="*"):
     fs = sorted(glob.glob(os.path.join(ROOT, "examples", f"{test}_{mix}_*.*")))
-    assert fs, "run tools/make_examples.py first"
+    assert fs, f"no example files for {test}"
     return call("parse", {"files": [{"name": os.path.basename(f), "b64": base64.b64encode(open(f, "rb").read()).decode()} for f in fs]})["files"]
 
 
@@ -133,6 +133,18 @@ def test_sltscb_examples():
         r = call("run", {"test": "sltscb", "settings": {}, "files": payload(F)})
         lci = [x["outputs"]["LCI"] for x in r["replicates"]]
         assert all(abs(a - b) < 0.1 for a, b in zip(lci, ref)), (mix, lci)
+
+
+def test_scb_and_idt_match_published_means():
+    # synthetic sets back-calculated from MN/RC 2007-43 (Tables 6.4 and 6.6)
+    want = {("scb", "MixA"): ("Gf", 549.0, 11.0), ("scb", "MixB"): ("Gf", 327.8, 9.4),
+            ("idt", "MixA"): ("St", 7.40, 5.0), ("idt", "MixB"): ("St", 5.06, 5.0)}
+    for (test, mix), (key, mean, cov) in want.items():
+        F = parse(test, mix)
+        r = call("run", {"test": test, "settings": {}, "files": payload(F)})
+        v = np.array([x["outputs"][key] for x in r["replicates"]])
+        assert abs(v.mean() - mean) / mean < 0.002, (test, mix, v)
+        assert abs(100 * v.std(ddof=1) / v.mean() - cov) < 0.1, (test, mix, v)
 
 
 def test_ifit_values_on_example():

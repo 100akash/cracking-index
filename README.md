@@ -52,11 +52,25 @@ Then open http://localhost:8765/?local=1. The page then uses the same engine thr
 |---|---|
 | `index.html`, `web/` | The page. `worker.js` runs the engine in the browser with [Pyodide](https://pyodide.org). |
 | `engine/` | All calculations in Python: file reading (`parse.py`), shared fits (`core.py`), each test (`methods.py`), test definitions (`specs.py`), exports (`report.py`) and routes (`routes.py`). |
-| `examples/` | Example files. I-FIT, IDEAL-CT, DONUT, SLT-SCB and DCT: two lab sets each (Mix A, Mix B) with names, IDs and dates removed. Other tests: synthetic curves for a made-up Mix A. |
-| `tools/make_examples.py` | Makes the synthetic example files (the other tests). |
+| `examples/` | Example files, two sets per test (Mix A, Mix B). I-FIT, IDEAL-CT, DONUT, SLT-SCB and DCT: lab records with names, IDs and dates removed. SCB and IDT strength: synthetic curves back-calculated to match published means (see below). |
+| `tools/make_examples.py` | Makes the SCB and IDT strength example files. |
 | `tests/test_engine.py` | Engine checks: `python -m pytest tests` |
 | `vendor/` | openpyxl wheels for the browser (MIT). |
 | `server.py` | Optional local server. |
+
+### SCB and IDT strength examples
+
+No public raw curves were found for these tests. The example curves are made to return the published means for two mixes at −24 °C in Marasteanu et al. (2007), [MnDOT report MN/RC 2007-43](https://rosap.ntl.bts.gov/view/dot/38925):
+
+| Set | Mix in the report | SCB (Table 6.4) | IDT strength, 12.5 mm/min (Table 6.6) |
+|---|---|---|---|
+| Mix A | 58-34:M1:4:GR (PG 58-34, granite) | G<sub>f</sub> 549.0 J/m² (CoV 11.0%), K<sub>IC</sub> 1.0 MPa·m<sup>0.5</sup> (CoV 4.0%) | 7.40 MPa |
+| Mix B | 58-34:M1:4:LM (PG 58-34, limestone) | G<sub>f</sub> 327.8 J/m² (CoV 9.4%), K<sub>IC</sub> 0.7 MPa·m<sup>0.5</sup> (CoV 5.8%) | 5.06 MPa |
+
+- SCB peak load comes from K<sub>IC</sub> through the tool's K<sub>IC</sub> equation. The post-peak width is then solved so the tool's G<sub>f</sub> matches.
+- IDT peak load comes from the strength for the tool's default 50 × 150 mm specimen. The report used 40 mm thick specimens and gives no CoV for strength, so 5% is assumed.
+- Three replicates per set sit at the mean − SD, the mean and the mean + SD. The tool returns the published mean and CoV.
+- Curve shapes, CMOD and LLD at peak, ram travel at peak, noise and sampling are assumed. They are not from the report.
 
 ## Cite
 
