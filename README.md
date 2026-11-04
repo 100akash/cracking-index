@@ -25,7 +25,7 @@ N<sub>flex</sub> follows Yin et al. (2018). The two draft methods may change bef
 ## How it works
 
 1. **Test.** Pick low or service temperature, record the test temperature, and pick the test.
-2. **Upload.** Add one file per replicate (CSV, TXT or XLSX). The tool finds time, load, LLD and CMOD columns and their units. Confirm the mapping. It checks the loading rate and sampling rate against the standard and plots each curve.
+2. **Upload.** Add one file per replicate (CSV, TXT or XLSX). The tool finds time, load, LLD and CMOD columns and their units. Confirm the mapping. Time is optional for every test except DCT. Without it, the tool still processes the file but skips the loading-rate and sampling checks. It checks the loading rate and sampling rate against the standard and plots each curve.
 3. **Process.** Choose raw or fitted data, trims, seating energy and load tare. Look at the fit. Enter the specimen dimensions and the batch details. Then run.
 4. **Results.** Mean, SD and COV of each output, with each replicate's values and checks. Remove one outlier or exclude replicates by hand. Export a zip with:
    - one Excel workbook per replicate (summary, processed data with a chart, fit details),
@@ -52,8 +52,8 @@ Then open http://localhost:8765/?local=1. The page then uses the same engine thr
 |---|---|
 | `index.html`, `web/` | The page. `worker.js` runs the engine in the browser with [Pyodide](https://pyodide.org). |
 | `engine/` | All calculations in Python: file reading (`parse.py`), shared fits (`core.py`), each test (`methods.py`), test definitions (`specs.py`), exports (`report.py`) and routes (`routes.py`). |
-| `examples/` | Example files. I-FIT: two lab sets (Mix A, Mix B) with names, IDs and dates removed. Other tests: synthetic curves for a made-up Mix A. |
-| `tools/make_examples.py` | Makes the synthetic example files (all tests except I-FIT). |
+| `examples/` | Example files. I-FIT and IDEAL-CT: two lab sets each (Mix A, Mix B) with names, IDs and dates removed. Other tests: synthetic curves for a made-up Mix A. |
+| `tools/make_examples.py` | Makes the synthetic example files (all tests except I-FIT and IDEAL-CT). |
 | `tests/test_engine.py` | Engine checks: `python -m pytest tests` |
 | `vendor/` | openpyxl wheels for the browser (MIT). |
 | `server.py` | Optional local server. |

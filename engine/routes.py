@@ -189,6 +189,11 @@ def _analyze(test, f, st):
     warn = list(res["warnings"])
     if rec["missing"]:
         warn.append("Missing column: " + ", ".join(rec["missing"]) + ".")
+    if not rec["has_time"] and "time" not in rec["missing"]:
+        # time is optional here: results use load and displacement only
+        warn.append("No time column. Loading rate and sampling were not checked.")
+        if "t_peak" in out:
+            out["t_peak"] = float("nan")
     if rate["ok"] is False:
         sp = specs.TESTS[test]
         warn.append(f"Loading rate {rate['value']:.4g} {sp['rate_unit']} is outside {specs.target(sp)}.")

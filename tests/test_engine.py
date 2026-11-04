@@ -59,10 +59,31 @@ def test_all_tests_run_and_pass_checks():
         r = call("run", {"test": t, "settings": {}, "files": payload(F)})
         for rep in r["replicates"]:
             assert "error" not in rep, (t, rep.get("error"))
+            if t == "idealct":
+                continue  # lab examples: one set sampled at 30 Hz, one set with no time column (see below)
             assert rep["checks"]["rate"]["ok"] is True, (t, rep["checks"]["rate"])
             assert rep["checks"]["hz"]["ok"] is True, (t, rep["checks"]["hz"])
             idx = routes.specs.TESTS[t]["index"]
             assert rep["outputs"][idx] is not None and math.isfinite(rep["outputs"][idx]), (t, idx)
+
+
+def test_idealct_examples_and_missing_time():
+    # Mix A: DAQ export sampled at 30 Hz (below the D8225 minimum). Mix B: processed export with no time column.
+    want = {"MixA": [120.0, 81.4, 106.0, 116.7], "MixB": [198.6, 201.9, 130.5, 151.4]}
+    for mix, ref in want.items():
+        F = parse("idealct", mix)
+        r = call("run", {"test": "idealct", "settings": {}, "files": payload(F)})
+        ct = [x["outputs"]["CT"] for x in r["replicates"]]
+        assert all(abs(a - b) < 0.5 for a, b in zip(ct, ref)), (mix, ct)
+        for rep in r["replicates"]:
+            if mix == "MixA":
+                assert rep["checks"]["rate"]["ok"] is True and rep["checks"]["hz"]["ok"] is False
+            else:
+                assert rep["checks"]["rate"]["ok"] is None and rep["checks"]["hz"]["ok"] is None
+                assert any("No time column" in w for w in rep["warnings"])
+                assert not any("Missing column" in w for w in rep["warnings"])
+    # DCT still needs time: D7313 fits CMOD against time
+    assert "time" in routes.specs.TESTS["dct"]["needs"]
 
 
 def test_ifit_values_on_example():

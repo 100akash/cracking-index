@@ -190,6 +190,7 @@
     const m = { time: "time", load: "load", lld: "LLD", cmod: "CMOD" };
     let s = t.needs.map((x) => m[x]).join(", ");
     if (t.optional.includes("cmod")) s += " (CMOD optional)";
+    if (t.optional.includes("time")) s += ", and time for the rate check";
     return s;
   }
 
@@ -235,7 +236,7 @@
             <strong>Drop CSV, TXT or XLSX files here</strong><span class="small muted">Select several at once.</span>
             <div class="row"><label class="btn navy">Browse files<input type="file" id="fileinput" multiple accept=".csv,.txt,.tsv,.dat,.xlsx,.xlsm" class="hidden"></label>
             <button class="btn" data-act="examples">Load example files</button></div>
-            <span class="small muted">${S.test === "ifit" ? "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch." : "Example files are synthetic curves for a made-up Mix A."}</span>
+            <span class="small muted">${["ifit", "idealct"].includes(S.test) ? "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch." : "Example files are synthetic curves for a made-up Mix A."}</span>
           </div>
           ${errs}
           ${gs.length ? `<div class="groups">${gHtml}</div>
@@ -278,6 +279,7 @@
     const miss = missingRoles(f);
     const notes = [...f.notes];
     if (!f.cols.some((c) => c.role === "cmod") && !sp.needs.includes("cmod")) notes.push(`No CMOD column found. ${sp.name} does not need one.`);
+    if (!f.cols.some((c) => c.role === "time") && sp.optional.includes("time")) notes.push("No time column found. The tool still processes the file, but it cannot check the loading rate or sampling.");
     return `<section class="card"><div class="row"><h3>${mark(S.confirmed[sig] ? "done" : "attn")}Column mapping · ${fs.length} file${fs.length === 1 ? "" : "s"} with this header</h3><span class="spacer"></span>
         ${S.confirmed[sig] ? '<span class="chip ok">✓ Confirmed</span>' : `<button class="btn primary small" data-act="confirm" data-sig="${esc(sig)}" ${miss.length ? "disabled" : ""}>Confirm mapping</button>`}</div>
       <div class="tblwrap"><table class="tbl"><thead><tr><th>Column in file</th><th>Unit</th><th>First values</th><th>Role ${help(HELP.role)}</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></div>
@@ -293,7 +295,7 @@
       if (c.error) return `<tr><td>${esc(stem(f.name))}</td><td colspan="4" class="bad">${esc(c.error)}</td><td class="rm">${rmBtn(f)}</td></tr>`;
       const r = c.rate, hz = c.hz;
       const rt0 = r.value == null ? `<span class="muted">${esc(r.text || "–")}</span>` : `<span class="${r.ok ? "ok" : "bad"}">${r.ok ? "✓" : "✗"} ${fmtSig(r.value, 4)} ${sp.rate_unit}</span>`;
-      const hzt = hz.value == null ? '<span class="muted">–</span>' : `<span class="${hz.ok ? "ok" : "bad"}">${hz.ok ? "✓" : "✗"} ${fmt(hz.value, 1)} Hz</span>`;
+      const hzt = hz.value == null ? `<span class="muted">${r.text === "No time column" ? "Not checked" : "–"}</span>` : `<span class="${hz.ok ? "ok" : "bad"}">${hz.ok ? "✓" : "✗"} ${fmt(hz.value, 1)} Hz</span>`;
       const rt = rt0;
       return `<tr><td>${esc(stem(f.name))}</td><td style="white-space:nowrap">${rt}</td><td class="small muted">${esc(rateTarget(sp))}</td><td style="white-space:nowrap">${hzt}</td><td class="small">${esc(c.segment)}${c.missing && c.missing.length ? ` · <span class="warn">missing ${c.missing.join(", ")}</span>` : ""}</td><td class="rm">${rmBtn(f)}</td></tr>`;
     }).join("");
@@ -301,7 +303,7 @@
     const pc = S.checks[S.previewFile];
     afterFns.push(() => {});
     return `<div class="grid2">
-      <section class="card"><h3>${mark(S.files.every((f) => { const c = S.checks[f.id]; return c && !c.error && c.rate.ok !== false && c.hz.ok !== false; }) ? "done" : "attn")}Loading checks</h3>
+      <section class="card"><h3>${mark(S.files.every((f) => { const c = S.checks[f.id]; return c && !c.error && c.rate.ok !== false && c.hz.ok !== false && c.rate.text !== "No time column"; }) ? "done" : "attn")}Loading checks</h3>
         <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate ${help(HELP.rate)}</th><th>Target</th><th>Sampling</th><th>Segment</th><th class="rm"><span class="sr">Remove</span></th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="small muted">Rate is a line fit of ${sp.control === "cmod" ? "CMOD" : "LLD"} vs. time from 25% of peak (rising) to the ${sp.end_load} kN cut-off${S.test === "dct" ? " (D7313 uses the slope of CMOD vs. time over the whole record)" : ""}. Checks warn only. They never block a run.</p>
       </section>
@@ -841,7 +843,7 @@
     });
   }
   // I-FIT has two anonymized lab sets, so a second batch can be compared with the first. Other tests: one synthetic set.
-  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], default: [["Mix A", 3]] };
+  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], idealct: [["Mix A", 4], ["Mix B", 4]], default: [["Mix A", 3]] };
   async function loadExamples() {
     const sets = EXAMPLES[S.test] || EXAMPLES.default;
     const used = S.batches.filter((b) => b.example && b.example.test === S.test).length;

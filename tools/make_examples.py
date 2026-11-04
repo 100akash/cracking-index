@@ -1,4 +1,4 @@
-"""Make the synthetic example files in examples/ (all tests except I-FIT).
+"""Make the synthetic example files in examples/ (all tests except I-FIT and IDEAL-CT).
 
 These are made-up curves for a made-up "Mix A". They are not test data.
 Run: python tools/make_examples.py
@@ -52,7 +52,7 @@ def lld_test(P, u0, bpre, bpost, rate_mm_min, hz, stop, tmax, noise=0.012, conta
 def mixA_service():
     reps = {  # peak kN, u0 mm, bpre, bpost, rate, Hz
         # I-FIT examples are anonymized lab records (Mix A and Mix B), not made here.
-        "idealct": [(9.1, 1.55, 1.15, 2.2, 50.3, 50), (8.7, 1.62, 1.2, 2.0, 49.9, 50), (9.5, 1.50, 1.1, 2.4, 50.6, 50)],
+        # IDEAL-CT examples are anonymized lab records (Mix A and Mix B), not made here.
         "donut": [(6.2, 1.05, 1.2, 2.1, 50.1, 60), (6.5, 1.00, 1.15, 2.3, 49.7, 60), (5.9, 1.10, 1.25, 1.95, 50.5, 60)],
     }
     for test, rr in reps.items():
