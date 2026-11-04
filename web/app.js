@@ -98,7 +98,7 @@
       if (n === 2 && S.files.length) sub = `: ${S.files.length} file${S.files.length === 1 ? "" : "s"}`;
       return `<button class="step" data-go="${n}" ${cur ? 'aria-current="step"' : ""} ${canGo(n) ? "" : "disabled"} title="${STATE_TITLE[st]}">
         <span class="n ${st}">${n}</span><span>${t}${sub}</span></button>`;
-    }).join("");
+    }).join("") + (S.files.length ? `<button class="stepclear" data-act="clearfiles" title="Remove all loaded files. You can undo this.">Clear files</button>` : "");
     const cur = stepsNav.querySelector("[aria-current]");
     if (cur && stepsNav.scrollWidth > stepsNav.clientWidth) stepsNav.scrollLeft = cur.offsetLeft - 16;
   }
@@ -1059,7 +1059,10 @@
       renderSteps();
     }
   });
-  stepsNav.addEventListener("click", (e) => { const t = e.target.closest("[data-go]"); if (t && !t.disabled) go(+t.dataset.go); });
+  stepsNav.addEventListener("click", (e) => {
+    if (e.target.closest('[data-act="clearfiles"]')) { removeFiles(S.files.map((f) => f.id)); return; }
+    const t = e.target.closest("[data-go]"); if (t && !t.disabled) go(+t.dataset.go);
+  });
   // drag and drop
   app.addEventListener("dragover", (e) => { const d = e.target.closest("#drop"); if (d) { e.preventDefault(); d.classList.add("over"); } });
   app.addEventListener("dragleave", (e) => { const d = e.target.closest("#drop"); if (d) d.classList.remove("over"); });

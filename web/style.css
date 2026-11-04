@@ -44,6 +44,8 @@ p { margin: 0; }
 .step .n.attn { border: 2px solid var(--orange); color: var(--orange-dk); position: relative; }
 .step .n.attn::before { content: ""; position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--orange); }
 .step[aria-current] { border-bottom-color: var(--orange); color: var(--navy); font-weight: 600; }
+.stepclear { margin-left: auto; align-self: center; flex: none; position: sticky; right: -12px; box-shadow: -14px 0 10px -2px #FFF, 16px 0 0 4px #FFF; padding: 6px 12px; border: 1px solid var(--rule); border-radius: 999px; background: #FFF; color: var(--bad); font: 500 13px var(--sans); cursor: pointer; white-space: nowrap; }
+.stepclear:hover { border-color: var(--bad); }
 .step[aria-current] .n.todo { background: var(--orange); border-color: var(--orange); color: var(--navy); font-weight: 700; }
 
 /* layout */
