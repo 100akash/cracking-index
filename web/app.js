@@ -667,6 +667,11 @@
   }
 
   /* ------------------------------------------------------------ actions */
+  // Files and results live only in this tab. Ask before a refresh, Back or close throws them away.
+  window.addEventListener("beforeunload", (e) => {
+    if (!S.files.length && !S.run) return;
+    e.preventDefault(); e.returnValue = "";
+  });
   async function addFiles(list) {
     const arr = [...list];
     if (!arr.length) return;
