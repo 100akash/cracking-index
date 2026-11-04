@@ -235,7 +235,7 @@
             <strong>Drop CSV, TXT or XLSX files here</strong><span class="small muted">Select several at once.</span>
             <div class="row"><label class="btn navy">Browse files<input type="file" id="fileinput" multiple accept=".csv,.txt,.tsv,.dat,.xlsx,.xlsm" class="hidden"></label>
             <button class="btn" data-act="examples">Load example files</button></div>
-            <span class="small muted">Example files are synthetic curves for a made-up Mix A.</span>
+            <span class="small muted">${S.test === "ifit" ? "Example files are lab records with names and dates removed. Mix A first, then Mix B for a second batch." : "Example files are synthetic curves for a made-up Mix A."}</span>
           </div>
           ${errs}
           ${gs.length ? `<div class="groups">${gHtml}</div>
@@ -597,7 +597,7 @@
   /* ------------------------------------------------------------ batches and comparison */
   // Everything that belongs to one batch. Test choice, settings and project carry over to the next batch.
   const BATCH_KEYS = ["no", "domain", "test", "temp", "tempUnit", "settings", "dimMode", "files", "active", "confirmed", "checks", "previewFile",
-    "dims", "labels", "batch", "run", "manual", "reasons", "outlier", "curveSel", "exp", "seen", "exported"];
+    "dims", "labels", "batch", "run", "manual", "reasons", "outlier", "curveSel", "exp", "seen", "exported", "example"];
   function snapBatch() { const o = {}; BATCH_KEYS.forEach((k) => (o[k] = S[k])); return o; }
   function loadBatch(o) { BATCH_KEYS.forEach((k) => (S[k] = o[k])); S.preview = null; S.fileErrors = []; }
   const batchName = (b) => String(b.batch.mix || "").trim() || `Batch ${b.no}`;
@@ -607,7 +607,7 @@
     S.batches.push(prev);
     S.no = S.nextNo++;
     S.files = []; S.active = null; S.confirmed = {}; S.checks = {}; S.previewFile = null; S.dims = {}; S.labels = {};
-    S.run = null; S.manual = {}; S.reasons = {}; S.outlier = false; S.curveSel = "all"; S.preview = null; S.fileErrors = []; S.exported = false;
+    S.run = null; S.manual = {}; S.reasons = {}; S.outlier = false; S.curveSel = "all"; S.preview = null; S.fileErrors = []; S.exported = false; S.example = null;
     S.settings = { ...S.settings }; S.exp = { ...S.exp };
     S.batch = { ...S.batch, mix: "", vma: "", nmas: "", binder: "", pg: "" };
     S.step = 2; S.seen = 2; render(); window.scrollTo(0, 0);
@@ -840,8 +840,14 @@
       fr.readAsDataURL(file);
     });
   }
+  // I-FIT has two anonymized lab sets, so a second batch can be compared with the first. Other tests: one synthetic set.
+  const EXAMPLES = { ifit: [["Mix A", 4], ["Mix B", 4]], default: [["Mix A", 3]] };
   async function loadExamples() {
-    const names = [1, 2, 3].map((i) => `${S.test}_MixA_R${i}.csv`);
+    const sets = EXAMPLES[S.test] || EXAMPLES.default;
+    const used = S.batches.filter((b) => b.example && b.example.test === S.test).length;
+    const [mix, n] = sets[used % sets.length];
+    const tag = mix.replace(/\s+/g, "");
+    const names = Array.from({ length: n }, (_, i) => `${S.test}_${tag}_R${i + 1}.csv`);
     try {
       const files = await Promise.all(names.map(async (n) => {
         const r = await fetch(`examples/${n}?v=${VER}`);
@@ -851,9 +857,10 @@
       S.files = []; S.confirmed = {}; S.checks = {}; S.dims = {}; S.labels = {};
       files.forEach((f, i) => (S.labels["pending" + i] = null));
       await addFiles(files);
-      S.files.forEach((f, i) => (S.labels[f.id] = `Mix A · R${i + 1}`));
+      S.files.forEach((f, i) => (S.labels[f.id] = `${mix} · R${i + 1}`));
       if (!S.batch.project) S.batch.project = "Example project";
-      if (!S.batch.mix) S.batch.mix = "Mix A";
+      if (!S.batch.mix || /^Mix [A-Z]$/.test(S.batch.mix)) S.batch.mix = mix;
+      S.example = { test: S.test, mix };
       render();
     } catch (e) { toast(e.message, true); }
   }

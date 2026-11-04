@@ -25,8 +25,8 @@ def call(path, body):
     return r["data"]
 
 
-def parse(test):
-    fs = sorted(glob.glob(os.path.join(ROOT, "examples", f"{test}_*.csv")))
+def parse(test, mix="*"):
+    fs = sorted(glob.glob(os.path.join(ROOT, "examples", f"{test}_{mix}_*.csv")))
     assert fs, "run tools/make_examples.py first"
     return call("parse", {"files": [{"name": os.path.basename(f), "b64": base64.b64encode(open(f, "rb").read()).decode()} for f in fs]})["files"]
 
@@ -66,10 +66,14 @@ def test_all_tests_run_and_pass_checks():
 
 
 def test_ifit_values_on_example():
-    F = parse("ifit")
-    r = call("run", {"test": "ifit", "settings": {}, "files": payload(F)})
-    fi = [x["outputs"]["FI"] for x in r["replicates"]]
-    assert 12 < fi[0] < 16 and 4 < fi[1] < 7 and 15 < fi[2] < 19
+    # two anonymized lab sets: Mix A (DAQ export with a units row) and Mix B (processed, no units row)
+    want = {"MixA": [9.5, 9.7, 11.2, 10.9], "MixB": [6.3, 6.0, 9.0, 5.0]}
+    for mix, ref in want.items():
+        F = parse("ifit", mix)
+        assert len({f["signature"] for f in F}) == 1
+        r = call("run", {"test": "ifit", "settings": {}, "files": payload(F)})
+        fi = [x["outputs"]["FI"] for x in r["replicates"]]
+        assert all(abs(a - b) < 0.3 for a, b in zip(fi, ref)), (mix, fi)
     o = r["replicates"][0]["outputs"]
     assert abs(o["FI"] - o["Gf"] / o["m_abs"] * 0.01) < 1e-9
     assert o["r2_post"] > 0.997
