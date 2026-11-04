@@ -37,10 +37,17 @@
   const fmt = (v, dp = 2) => (fin(v) ? (Math.abs(v) >= 1e5 ? v.toExponential(2).replace("e+", "e") : v.toFixed(dp)) : "–");
   const fmtSig = (v, n = 4) => (fin(v) ? Number(v.toPrecision(n)).toString() : "–");
   const stem = (n) => String(n).replace(/\.[^.]+$/, "");
-  const toast = (msg, bad) => {
+  const toast = (msg, bad, act) => {
     const t = document.getElementById("toast");
-    t.textContent = msg; t.className = "toast show" + (bad ? " bad" : "");
-    clearTimeout(toast._t); toast._t = setTimeout(() => (t.className = "toast"), bad ? 6000 : 3000);
+    t.textContent = msg;
+    if (act) {
+      const b = document.createElement("button");
+      b.className = "tbtn"; b.type = "button"; b.textContent = act.label;
+      b.onclick = () => { clearTimeout(toast._t); t.className = "toast"; act.fn(); };
+      t.append(b);
+    }
+    t.className = "toast show" + (bad ? " bad" : "") + (act ? " act" : "");
+    clearTimeout(toast._t); toast._t = setTimeout(() => (t.className = "toast"), act ? 9000 : bad ? 6000 : 3000);
   };
   const ROLE_LABEL = { time: "Time", load: "Load", load2: "Load 2 (averaged)", lld: "LLD", lld2: "LLD 2 (averaged)", cmod: "CMOD", ignore: "Ignore" };
   const UNITS = {
@@ -211,7 +218,7 @@
       return `<div class="group" role="button" tabindex="0" data-act="group" data-sig="${esc(sig)}" ${sig === S.active ? 'aria-current="true"' : ""}>
         <div class="row"><strong>Format ${String.fromCharCode(65 + i)}</strong><span class="small muted">${esc(desc)}</span><span class="spacer"></span>
           ${ok ? '<span class="chip ok">✓ Mapping confirmed</span>' : '<span class="chip warn">Review mapping</span>'}</div>
-        <div class="filelist">${fs.map((f) => `<span>${esc(f.name)} · ${f.rows} rows <button class="x" data-act="rmfile" data-id="${f.id}" aria-label="Remove ${esc(f.name)}">✕</button></span>`).join("")}</div>
+        <div class="filelist">${fs.map((f) => `<span class="fchip">${esc(f.name)} <small>${f.rows} rows</small>${rmBtn(f)}</span>`).join("")}</div>
       </div>`;
     }).join("");
     const errs = S.fileErrors && S.fileErrors.length ? `<div class="notice err"><strong>Some files could not be read.</strong><ul>${S.fileErrors.map((e) => `<li>${esc(e.name)}: ${esc(e.error)}</li>`).join("")}</ul></div>` : "";
@@ -227,7 +234,8 @@
             <span class="small muted">Example files are synthetic curves for a made-up Mix A.</span>
           </div>
           ${errs}
-          ${gs.length ? `<div class="groups">${gHtml}</div>` : ""}
+          ${gs.length ? `<div class="groups">${gHtml}</div>
+          <div class="row small filesfoot"><span class="muted">${S.files.length} file${S.files.length === 1 ? "" : "s"} added. Remove any file you did not mean to add.</span><span class="spacer"></span><button class="linkbtn rmall" data-act="rmall">Remove all files</button></div>` : ""}
         </section>
         <section class="card"><h3>What the tool needs for ${esc(sp.name)}</h3>
           <p class="small"><strong>Needs:</strong> ${needsText(sp)}</p>
@@ -277,20 +285,20 @@
     const sp = spec();
     const rows = S.files.map((f) => {
       const c = S.checks[f.id];
-      if (!c) return `<tr><td>${esc(stem(f.name))}</td><td colspan="4"><span class="busy"></span></td></tr>`;
-      if (c.error) return `<tr><td>${esc(stem(f.name))}</td><td colspan="4" class="bad">${esc(c.error)}</td></tr>`;
+      if (!c) return `<tr><td>${esc(stem(f.name))}</td><td colspan="4"><span class="busy"></span></td><td class="rm">${rmBtn(f)}</td></tr>`;
+      if (c.error) return `<tr><td>${esc(stem(f.name))}</td><td colspan="4" class="bad">${esc(c.error)}</td><td class="rm">${rmBtn(f)}</td></tr>`;
       const r = c.rate, hz = c.hz;
       const rt0 = r.value == null ? `<span class="muted">${esc(r.text || "–")}</span>` : `<span class="${r.ok ? "ok" : "bad"}">${r.ok ? "✓" : "✗"} ${fmtSig(r.value, 4)} ${sp.rate_unit}</span>`;
       const hzt = hz.value == null ? '<span class="muted">–</span>' : `<span class="${hz.ok ? "ok" : "bad"}">${hz.ok ? "✓" : "✗"} ${fmt(hz.value, 1)} Hz</span>`;
       const rt = rt0;
-      return `<tr><td>${esc(stem(f.name))}</td><td style="white-space:nowrap">${rt}</td><td class="small muted">${esc(rateTarget(sp))}</td><td style="white-space:nowrap">${hzt}</td><td class="small">${esc(c.segment)}${c.missing && c.missing.length ? ` · <span class="warn">missing ${c.missing.join(", ")}</span>` : ""}</td></tr>`;
+      return `<tr><td>${esc(stem(f.name))}</td><td style="white-space:nowrap">${rt}</td><td class="small muted">${esc(rateTarget(sp))}</td><td style="white-space:nowrap">${hzt}</td><td class="small">${esc(c.segment)}${c.missing && c.missing.length ? ` · <span class="warn">missing ${c.missing.join(", ")}</span>` : ""}</td><td class="rm">${rmBtn(f)}</td></tr>`;
     }).join("");
     if (!S.previewFile || !S.files.find((f) => f.id === S.previewFile)) S.previewFile = S.files[0].id;
     const pc = S.checks[S.previewFile];
     afterFns.push(() => {});
     return `<div class="grid2">
       <section class="card"><h3>${mark(S.files.every((f) => { const c = S.checks[f.id]; return c && !c.error && c.rate.ok !== false && c.hz.ok !== false; }) ? "done" : "attn")}Loading checks</h3>
-        <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate ${help(HELP.rate)}</th><th>Target</th><th>Sampling</th><th>Segment</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="tblwrap"><table class="tbl"><thead><tr><th>File</th><th>${sp.control === "cmod" ? "CMOD" : "LLD"} rate ${help(HELP.rate)}</th><th>Target</th><th>Sampling</th><th>Segment</th><th class="rm"><span class="sr">Remove</span></th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="small muted">Rate is a line fit of ${sp.control === "cmod" ? "CMOD" : "LLD"} vs. time from 25% of peak (rising) to the ${sp.end_load} kN cut-off${S.test === "dct" ? " (D7313 uses the slope of CMOD vs. time over the whole record)" : ""}. Checks warn only. They never block a run.</p>
       </section>
       <section class="card"><div class="row"><h3>Preview</h3><span class="spacer"></span>
@@ -374,6 +382,7 @@
       <div class="foot"><button class="btn" data-go="2">Back</button></div>`;
   }
   const bf = (k, l, ph) => `<label class="f">${l}<input type="text" data-batch="${k}" value="${esc(S.batch[k])}"${ph ? ` placeholder="${ph}"` : ""}></label>`;
+  function rmBtn(f) { return `<button class="x" type="button" data-act="rmfile" data-id="${esc(f.id)}" title="Remove this file" aria-label="Remove ${esc(f.name)}">✕</button>`; }
   function label(f) { return S.labels[f.id] != null ? S.labels[f.id] : stem(f.name); }
 
   /* dimensions: per file, per key: {v: [readings] or number, ok: confirmed} */
@@ -416,7 +425,7 @@
   }
   function dimsCard() {
     const sp = spec();
-    const head = sp.dims.map((d) => `<th class="n">${esc(d.label)} (${d.unit})</th>`).join("") + "<th class='n'>Air voids (%)</th><th>Check</th>";
+    const head = sp.dims.map((d) => `<th class="n">${esc(d.label)} (${d.unit})</th>`).join("") + "<th class='n'>Air voids (%)</th><th>Check</th><th class='rm'><span class='sr'>Remove</span></th>";
     const rows = S.files.map((f) => {
       const row = dimRow(f.id);
       const cells = sp.dims.map((d) => {
@@ -442,7 +451,7 @@
       const chk = !ready ? `<button class="btn soft small" data-act="acceptrow" data-id="${f.id}">Accept defaults</button>` :
         bad.length ? `<span class="warn small">! ${bad.map((d) => d.key).join(", ")} outside ${esc(sp.standard_plain || sp.standard.replace(/<[^>]+>/g, ""))}</span>` : `<span class="ok small">✓ Within ${esc(sp.standard_plain || sp.standard.replace(/<[^>]+>/g, ""))}</span>`;
       return `<tr><td><input type="text" data-label="${f.id}" value="${esc(label(f))}" style="width:150px" aria-label="Specimen name"><div class="small muted">${esc(f.name)}</div></td>${cells}
-        <td class="n"><input type="text" inputmode="decimal" class="num" data-av="${f.id}" value="${esc(row.av.vals[0])}" placeholder="optional"></td><td>${chk}</td></tr>`;
+        <td class="n"><input type="text" inputmode="decimal" class="num" data-av="${f.id}" value="${esc(row.av.vals[0])}" placeholder="optional"></td><td>${chk}</td><td class="rm">${rmBtn(f)}</td></tr>`;
     }).join("");
     return `<section class="card"><div class="row"><h3>${mark(S.files.every((f) => dimsReady(f.id)) ? "done" : "attn")}Specimen dimensions</h3><span class="spacer"></span>
         <div class="seg" role="group"><button data-act="dimmode" data-v="avg" aria-pressed="${S.dimMode === "avg"}">Averaged values</button><button data-act="dimmode" data-v="ind" aria-pressed="${S.dimMode === "ind"}">Individual readings</button></div>
@@ -675,6 +684,33 @@
     } catch (e) { toast(e.message, true); }
     S.busy = false; render();
   }
+  let forgetIds = [];
+  function flushForget() {
+    clearTimeout(flushForget._t);
+    if (forgetIds.length) API("forget", { ids: forgetIds }).catch(() => {});
+    forgetIds = [];
+  }
+  function removeFiles(ids) {
+    if (!ids.length) return;
+    flushForget();
+    const snap = { files: S.files.slice(), checks: { ...S.checks }, dims: { ...S.dims }, labels: { ...S.labels }, confirmed: { ...S.confirmed },
+      run: S.run, step: S.step, active: S.active, previewFile: S.previewFile };
+    const gone = S.files.filter((f) => ids.includes(f.id));
+    S.files = S.files.filter((f) => !ids.includes(f.id));
+    ids.forEach((id) => { delete S.checks[id]; delete S.dims[id]; delete S.labels[id]; });
+    const sigs = new Set(S.files.map((f) => f.signature));
+    Object.keys(S.confirmed).forEach((g) => { if (!sigs.has(g)) delete S.confirmed[g]; });
+    if (!sigs.has(S.active)) S.active = S.files.length ? S.files[0].signature : null;
+    S.preview = null;
+    S.run = null;  // results no longer match the files
+    if (!S.files.length && S.step > 2) S.step = 2;
+    forgetIds = ids.slice(); flushForget._t = setTimeout(flushForget, 9500);
+    toast(gone.length === 1 ? `Removed ${gone[0].name}` : `Removed ${gone.length} files`, false, { label: "Undo", fn: () => {
+      clearTimeout(flushForget._t); forgetIds = [];
+      Object.assign(S, snap); S.preview = null; render(); if (S.step === 3) refreshPreview();
+    } });
+    render(); if (S.step === 3 && S.files.length) refreshPreview();
+  }
   function toB64(file) {
     return new Promise((res, rej) => {
       const fr = new FileReader();
@@ -814,13 +850,8 @@
     else if (a === "examples") loadExamples();
     else if (a === "group") { S.active = t.dataset.sig; render(); }
     else if (a === "gconfirm") { S.active = t.dataset.sig; render(); const m = app.querySelector('[data-act="confirm"]'); if (m) m.closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }); }
-    else if (a === "rmfile") {
-      e.stopPropagation();
-      const id = t.dataset.id;
-      S.files = S.files.filter((f) => f.id !== id); delete S.checks[id]; delete S.dims[id];
-      API("forget", { ids: [id] }).catch(() => {});
-      render();
-    }
+    else if (a === "rmfile") { e.stopPropagation(); removeFiles([t.dataset.id]); }
+    else if (a === "rmall") removeFiles(S.files.map((f) => f.id));
     else if (a === "confirm") { S.confirmed[t.dataset.sig] = true; render(); }
     else if (a === "pfile") { S.previewFile = t.dataset.id; render(); }
     else if (a === "mode") { S.settings.mode = t.dataset.v; render(); refreshPreview(); }
